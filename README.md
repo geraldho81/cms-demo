@@ -71,19 +71,26 @@ the agent to build your site. Paste the prompt below to start.
 1. **Read `AGENTS.md` before writing any code.** It is the contract: content
    model, the block engine, CLI/REST reference, the SEO/GEO checklist, the
    contact form, the media trash bin, and the retheming guide.
-2. **To build pages,** either use the visual admin, or create them as code with
+2. **Set up the environment first - the app will not run without it.** Run
+   `cp .env.example .env.local`, then ask the site owner for their own API
+   credentials and fill them into `.env.local`: `DATABASE_URL` (Neon),
+   `AUTH_SECRET` (`openssl rand -base64 32`), and the three `CLOUDINARY_*` keys
+   are required; Resend is optional. Never edit `.env.example` or commit real
+   keys. Then run `npm run db:migrate && npm run seed && npm run dev`. If a
+   required key is missing, stop and ask the owner - do not use placeholders.
+3. **To build pages,** either use the visual admin, or create them as code with
    the CLI: `npm run cms -- create-page --title "Pricing" --blocks-file blocks.json --publish`.
    A page is an array of blocks; run `npm run cms -- get-page home` after seeding
    to see a real example.
-3. **To add a new section type,** create one file in `src/blocks/<name>/index.tsx`
+4. **To add a new section type,** create one file in `src/blocks/<name>/index.tsx`
    and register it in `src/blocks/registry.ts`. The palette, settings form,
    validation, REST API, and renderer pick it up automatically. See the
    walkthrough in `AGENTS.md`.
-4. **To restyle,** edit the CSS variables at the top of `src/app/globals.css`
+5. **To restyle,** edit the CSS variables at the top of `src/app/globals.css`
    first (`--bg`, `--text`, `--accent`, `--radius`, ...), then the `cms-*`
    classes. The font is in `src/app/layout.tsx`. Admin uses separate `--ad-*`
    variables - do not touch those.
-5. **Always verify:** `npm run typecheck && npm run build`. There is no test
+6. **Always verify:** `npm run typecheck && npm run build`. There is no test
    suite; a green build plus a manual check is the bar.
 
 **Rules an agent must follow:**

@@ -41,6 +41,31 @@ default. To allow them: Cloudinary console -> Settings -> Security ->
 "PDF and ZIP files delivery" -> tick "Allow delivery of PDF and ZIP files".
 This note is also shown to the user on the admin media page.
 
+## FIRST STEP: environment setup (do this before anything else)
+
+The app will not run until the environment is configured. Before building
+pages, blocks, or running any command:
+
+1. **Copy the example file:** `cp .env.example .env.local`. Never edit
+   `.env.example` itself and never put real keys in it - it is committed to git.
+   All real credentials go in `.env.local`, which is gitignored.
+2. **Ask the user for their own API credentials and fill them into
+   `.env.local`.** These are the user's own accounts; you cannot create them.
+   Explicitly request:
+   - **`DATABASE_URL`** (required) - their Neon Postgres pooled connection string.
+   - **`AUTH_SECRET`** (required) - generate it for them: `openssl rand -base64 32`.
+   - **`CLOUDINARY_CLOUD_NAME` / `CLOUDINARY_API_KEY` / `CLOUDINARY_API_SECRET`**
+     (required for media) - from their Cloudinary dashboard.
+   - **`RESEND_API_KEY` / `EMAIL_FROM` / `EMAIL_TO`** (optional) - only if they
+     want contact-form submissions emailed.
+   - **`CRON_SECRET`** (set before deploying) - any long random string.
+   `.env.example` contains step-by-step "where to find it" instructions for each.
+3. **Do not invent, guess, or commit credentials.** If the user has not
+   provided a required key yet, stop and ask for it rather than proceeding with
+   placeholders.
+4. Once `.env.local` is filled: `npm run db:migrate` (create tables) ->
+   `npm run seed` (first admin + sample content) -> `npm run dev`.
+
 ## Commands
 
 ```bash
