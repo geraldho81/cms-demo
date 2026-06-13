@@ -1,0 +1,91 @@
+/* ============================================================
+   Slim Minima - optional immersive add-on styles
+   Append these to src/app/globals.css ONLY if you enable the
+   immersive module (SiteFX + HeroScene). They power the grain,
+   scroll progress bar, custom cursor, JS-gated scroll reveals,
+   headline char splits, and the terminal caret.
+   The classes/attributes use the `ax-` prefix to match SiteFX.tsx.
+   ============================================================ */
+
+.ax-grain {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  pointer-events: none;
+  opacity: 0.11;
+  background-image:
+    linear-gradient(115deg, rgba(255, 255, 255, 0.07), transparent 30%),
+    repeating-radial-gradient(circle at 17% 24%, rgba(255, 255, 255, 0.2) 0 1px, transparent 1px 4px);
+  mix-blend-mode: overlay;
+}
+
+.ax-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  z-index: 95;
+  background: var(--accent);
+  transform-origin: 0 50%;
+  transform: scaleX(0);
+  pointer-events: none;
+}
+
+.ax-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 34px;
+  height: 34px;
+  margin: -17px 0 0 -17px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  z-index: 99;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  mix-blend-mode: screen;
+}
+@media (pointer: coarse) {
+  .ax-cursor { display: none; }
+}
+
+/* JS-gated initial states for scroll reveals. SiteFX adds `.ax-js` to
+   <html> once the animation libs load (and removes it if they fail), so
+   content is never stuck hidden when JS is off or slow. */
+.ax-js [data-ax-reveal] { opacity: 0; }
+.ax-js [data-ax-chars], .ax-js [data-ax-words] { opacity: 0; }
+.ax-js [data-ax-chars] .ax-split-line {
+  overflow: clip;
+  overflow-clip-margin: 0.12em;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ax-js [data-ax-reveal] { opacity: 1 !important; transform: none !important; }
+}
+
+/* Terminal typing caret */
+.ax-caret {
+  display: inline-block;
+  width: 0.55em;
+  height: 1.05em;
+  background: var(--accent);
+  vertical-align: text-bottom;
+  margin-left: 2px;
+  animation: ax-blink 1s steps(2) infinite;
+}
+@keyframes ax-blink {
+  50% { opacity: 0; }
+}
+
+/* WebGL hero canvas (HeroScene.tsx). Place inside a position:relative hero. */
+.ax-hero-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: -3;
+}
+.ax-hero-canvas canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}

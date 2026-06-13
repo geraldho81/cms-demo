@@ -1,0 +1,207 @@
+"use client";
+
+import { useState } from "react";
+import type { ReactNode } from "react";
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
+import { SortableContext, verticalListSortingStrategy, useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import type { Block } from "@/blocks/types";
+import { registry, blockList } from "@/blocks/registry";
+
+export type BlockAction = "up" | "down" | "duplicate" | "delete";
+
+type CanvasProps = {
+  blocks: Block[];
+  selectedId: string | null;
+  onSelect: (id: string | null) => void;
+  onAction: (id: string, action: BlockAction) => void;
+  onReorder: (activeId: string, overId: string) => void;
+  onAddToZone: (containerId: string, zoneIndex: number, type: string) => void;
+};
+
+export function Canvas(props: CanvasProps) {
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (over && active.id !== over.id) props.onReorder(String(active.id), String(over.id));
+  }
+
+  return (
+    <div
+      className="min-h-full bg-white"
+      onClick={() => props.onSelect(null)}
+      onClickCapture={(e) => {
+        // Keep links and embeds inert inside the editor canvas
+        const el = e.target as HTMLElement;
+        if (el.closest("a")) e.preventDefault();
+      }}
+    >
+      {props.blocks.length === 0 ? (
+        <div className="flex h-[60vh] items-center justify-center">
+          <p className="text-sm" style={{ color: "var(--ad-muted)" }}>
+            Add your first block from the palette on the left.
+          </p>
+        </div>
+      ) : (
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={props.blocks.map((b) => b.id)} strategy={verticalListSortingStrategy}>
+            {props.blocks.map((block, i) => (
+              <SortableBlock
+                key={block.id}
+                block={block}
+                index={i}
+                total={props.blocks.length}
+                {...props}
+              />
+            ))}
+          </SortableContext>
+        </DndContext>
+      )}
+    </div>
+  );
+}
+
+function SortableBlock(props: CanvasProps & { block: Block; index: number; total: number }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: props.block.id });
+  return (
+    <div
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 }}
+    >
+      <CanvasBlock
+        block={props.block}
+        selectedId={props.selectedId}
+        onSelect={props.onSelect}
+        onAction={props.onAction}
+        onAddToZone={props.onAddToZone}
+        canMoveUp={props.index > 0}
+        canMoveDown={props.index < props.total - 1}
+        dragHandle={
+          <button title="Drag to reorder" style={{ cursor: "grab", touchAction: "none" }} {...attributes} {...listeners}>
+            ⠿
+          </button>
+        }
+      />
+    </div>
+  );
+}
+
+function CanvasBlock({
+  block,
+  selectedId,
+  onSelect,
+  onAction,
+  onAddToZone,
+  canMoveUp,
+  canMoveDown,
+  dragHandle,
+}: {
+  block: Block;
+  selectedId: string | null;
+  onSelect: (id: string) => void;
+  onAction: (id: string, action: BlockAction) => void;
+  onAddToZone: (containerId: string, zoneIndex: number, type: string) => void;
+  canMoveUp: boolean;
+  canMoveDown: boolean;
+  dragHandle?: ReactNode;
+}) {
+  const def = registry[block.type];
+  if (!def) {
+    return (
+      <div className="cms-container cms-block">
+        <div className="cms-image-placeholder">Unknown block type: {block.type}</div>
+      </div>
+    );
+  }
+
+  const parsed = def.schema.safeParse({ ...def.defaults, ...block.props });
+  const blockProps = parsed.success ? parsed.data : def.defaults;
+  const selected = selectedId === block.id;
+
+  const zoneCount = def.zoneCount?.(blockProps) ?? 0;
+  let zones: ReactNode[] | undefined;
+  if (zoneCount > 0) {
+    zones = Array.from({ length: zoneCount }, (_, zi) => {
+      const zoneBlocks = block.zones?.[zi] ?? [];
+      return (
+        <div key={zi} className={`canvas-zone ${zoneBlocks.length === 0 ? "canvas-zone-empty" : ""}`}>
+          {zoneBlocks.map((child, ci) => (
+            <CanvasBlock
+              key={child.id}
+              block={child}
+              selectedId={selectedId}
+              onSelect={onSelect}
+              onAction={onAction}
+              onAddToZone={onAddToZone}
+              canMoveUp={ci > 0}
+              canMoveDown={ci < zoneBlocks.length - 1}
+            />
+          ))}
+          <ZoneAdd onAdd={(type) => onAddToZone(block.id, zi, type)} />
+        </div>
+      );
+    });
+  }
+
+  const Component = def.Preview ?? def.Render;
+
+  return (
+    <div
+      className={`canvas-block ${selected ? "canvas-block-selected" : ""}`}
+      onClick={(e) => {
+        e.stopPropagation();
+        onSelect(block.id);
+      }}
+    >
+      {selected && (
+        <>
+          <span className="canvas-block-label">{def.label}</span>
+          <span className="canvas-block-toolbar" onClick={(e) => e.stopPropagation()}>
+            {dragHandle}
+            <button title="Move up" disabled={!canMoveUp} style={{ opacity: canMoveUp ? 1 : 0.35 }} onClick={() => onAction(block.id, "up")}>↑</button>
+            <button title="Move down" disabled={!canMoveDown} style={{ opacity: canMoveDown ? 1 : 0.35 }} onClick={() => onAction(block.id, "down")}>↓</button>
+            <button title="Duplicate" onClick={() => onAction(block.id, "duplicate")}>⧉</button>
+            <button title="Delete" onClick={() => onAction(block.id, "delete")}>✕</button>
+          </span>
+        </>
+      )}
+      <Component {...blockProps} ctx={{ zones }} />
+    </div>
+  );
+}
+
+function ZoneAdd({ onAdd }: { onAdd: (type: string) => void }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="relative py-1.5 text-center" onClick={(e) => e.stopPropagation()}>
+      <button
+        type="button"
+        className="rounded-md px-2.5 py-1 text-xs font-semibold"
+        style={{ color: "var(--ad-accent)", background: "var(--ad-accent-soft)" }}
+        onClick={() => setOpen((v) => !v)}
+      >
+        + Add block
+      </button>
+      {open && (
+        <div className="absolute left-1/2 z-30 mt-1 max-h-56 w-44 -translate-x-1/2 overflow-y-auto rounded-lg bg-white p-1 text-left shadow-xl">
+          {blockList
+            .filter((d) => !d.zoneCount)
+            .map((d) => (
+              <button
+                key={d.type}
+                type="button"
+                className="block w-full rounded-md px-2.5 py-1.5 text-left text-xs font-medium hover:bg-[var(--ad-bg)]"
+                onClick={() => {
+                  onAdd(d.type);
+                  setOpen(false);
+                }}
+              >
+                {d.label}
+              </button>
+            ))}
+        </div>
+      )}
+    </div>
+  );
+}
