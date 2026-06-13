@@ -1,6 +1,8 @@
-# Slim Minima
+# Slim Minima - a minimal, self-hosted CMS for marketers
 
 **A CMS built for marketers, by marketers.**
+
+_Block-based pages, blog, and media on Next.js + Neon Postgres + Cloudinary. SEO and GEO ready, with an AI/MCP connector and REST API for Claude, ChatGPT, and coding agents._
 
 The content layer without the bloat. Slim Minima gives you pages, posts, and a
 media library that are SEO and GEO ready out of the box, then gets out of your
@@ -21,6 +23,7 @@ Vercel.
 - **Menus, settings, users** - header/footer nav, site identity, admin/editor roles.
 - **SEO and GEO** - canonical URLs, JSON-LD, sitemap, robots, RSS, plus LLM-native `/llms.txt`, `/llms-full.txt`, and a markdown view of every page (`/<slug>.md`).
 - **Agent access** - a content CLI (`npm run cms`) and an API-key REST API (`/api/v1`) so agents can build and edit content.
+- **AI connector (MCP)** - a built-in Model Context Protocol server. Connect Claude, ChatGPT, Perplexity, or Grok to read your pages and posts and write blog posts in plain language. Auto-provisioned: copy the URL and token from Settings.
 
 ## What you'll need (free tiers are fine)
 
