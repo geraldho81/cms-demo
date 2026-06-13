@@ -2,6 +2,9 @@
 
 import { useRef, useState } from "react";
 import { saveSettings } from "@/app/admin/actions";
+import { MediaPicker } from "@/components/admin/MediaPicker";
+
+const DEFAULT_LOGO = "/slim-minima-logo.svg";
 
 type Values = {
   siteName: string;
@@ -18,6 +21,7 @@ const GTM_ID_PATTERN = /^GTM-[A-Z0-9]{4,12}$/;
 export function SettingsForm({ initial }: { initial: Values }) {
   const [values, setValues] = useState(initial);
   const [state, setState] = useState<"idle" | "dirty" | "saving" | "saved">("idle");
+  const [showLogoPicker, setShowLogoPicker] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const valuesRef = useRef(values);
   valuesRef.current = values;
@@ -53,13 +57,36 @@ export function SettingsForm({ initial }: { initial: Values }) {
           <input className="ad-input" value={values.tagline} onChange={(e) => update({ tagline: e.target.value })} />
         </div>
         <div className="ad-field">
-          <label className="ad-label">Logo URL (optional)</label>
-          <input className="ad-input" value={values.logoUrl} placeholder="https://..." onChange={(e) => update({ logoUrl: e.target.value })} />
-        </div>
-        <div className="ad-field">
           <label className="ad-label">Default social image URL</label>
           <input className="ad-input" value={values.defaultOgImage} placeholder="https://..." onChange={(e) => update({ defaultOgImage: e.target.value })} />
         </div>
+      </div>
+
+      <div className="ad-field">
+        <label className="ad-label">Logo</label>
+        <div className="flex items-center gap-3">
+          <div className="flex h-12 min-w-[3rem] items-center justify-center rounded-lg px-3" style={{ background: "var(--ad-bg)" }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={values.logoUrl || DEFAULT_LOGO} alt="Logo preview" style={{ height: 22, width: "auto" }} />
+          </div>
+          <button type="button" className="ad-btn ad-btn-soft" onClick={() => setShowLogoPicker(true)}>
+            Choose or upload
+          </button>
+          {values.logoUrl && values.logoUrl !== DEFAULT_LOGO && (
+            <button type="button" className="ad-btn ad-btn-soft" onClick={() => update({ logoUrl: DEFAULT_LOGO })}>
+              Reset to default
+            </button>
+          )}
+        </div>
+        <input
+          className="ad-input mt-2"
+          value={values.logoUrl}
+          placeholder="Or paste a logo URL (https://...)"
+          onChange={(e) => update({ logoUrl: e.target.value })}
+        />
+        <p className="mt-1 text-xs" style={{ color: "var(--ad-muted)" }}>
+          Shown in the site header and on the sign-in page. Defaults to the Slim Minima logo.
+        </p>
       </div>
       <div className="ad-field">
         <label className="ad-label">Footer text</label>
@@ -124,6 +151,16 @@ export function SettingsForm({ initial }: { initial: Values }) {
           Open Google Tag Manager
         </a>
       </div>
+
+      {showLogoPicker && (
+        <MediaPicker
+          onSelect={(url) => {
+            update({ logoUrl: url });
+            setShowLogoPicker(false);
+          }}
+          onClose={() => setShowLogoPicker(false)}
+        />
+      )}
     </section>
   );
 }

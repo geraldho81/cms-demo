@@ -1,19 +1,19 @@
 import { createHash } from "crypto";
 import { auth } from "@/lib/auth";
+import { getCloudinaryCreds } from "@/lib/cloudinary-config";
 
 export async function POST() {
   const session = await auth();
   if (!session?.user) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
-  const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
-  const apiKey = process.env.CLOUDINARY_API_KEY;
-  const apiSecret = process.env.CLOUDINARY_API_SECRET;
-  if (!cloudName || !apiKey || !apiSecret) {
+  const creds = await getCloudinaryCreds();
+  if (!creds) {
     return Response.json(
-      { error: "Cloudinary is not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET." },
-      { status: 500 }
+      { error: "Cloudinary is not connected. Add your credentials in Settings or set the CLOUDINARY_* environment variables." },
+      { status: 400 }
     );
   }
+  const { cloudName, apiKey, apiSecret } = creds;
 
   const folder = process.env.CLOUDINARY_FOLDER || "slim-minima";
   const timestamp = Math.floor(Date.now() / 1000);

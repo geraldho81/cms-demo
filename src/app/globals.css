@@ -2,7 +2,7 @@
 
 /* ============================================================
    Site theme tokens - THE place to restyle the public site.
-   Slim Minima: quiet, minimal. Off-white paper, ink, quiet indigo.
+   Slim Minima: quiet, minimal. Off-white paper, black ink, no color accent.
    Change these variables first; the cms-* classes below follow.
    ============================================================ */
 :root {
@@ -12,10 +12,10 @@
   --text: #18181b;
   --muted: #6b6b76;
   --soft: #9a9aa3;
-  --accent: #4338ca;
-  --accent-hover: #3730a3;
+  --accent: #111111;
+  --accent-hover: #333333;
   --accent-contrast: #ffffff;
-  --cyan: #6366f1;
+  --cyan: #111111;
   --line: rgba(24, 24, 27, 0.10);
   --danger: #b42318;
   --radius: 12px;
@@ -26,8 +26,8 @@
   --ad-surface: #ffffff;
   --ad-text: #1c1c1c;
   --ad-muted: #76766f;
-  --ad-accent: #4338ca;
-  --ad-accent-soft: #eceafd;
+  --ad-accent: #111111;
+  --ad-accent-soft: #ececeb;
   --ad-danger: #b42318;
   --ad-green: #067647;
   --ad-radius: 10px;
@@ -830,7 +830,7 @@ main { min-height: 60vh; }
 }
 .ad-btn:disabled { opacity: 0.5; cursor: default; }
 .ad-btn-primary { background: var(--ad-accent); color: #fff; }
-.ad-btn-primary:hover:not(:disabled) { background: #3730a3; }
+.ad-btn-primary:hover:not(:disabled) { background: #333333; }
 .ad-btn-soft { background: var(--ad-bg); color: var(--ad-text); }
 .ad-btn-soft:hover:not(:disabled) { background: #e9e9e5; }
 .ad-btn-danger { background: #fbeae9; color: var(--ad-danger); }

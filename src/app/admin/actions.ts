@@ -524,6 +524,28 @@ export async function saveSettings(values: Record<string, unknown>) {
   revalidatePath("/", "layout");
 }
 
+/** Save Cloudinary credentials into settings. The API secret is write-only:
+ *  an empty value leaves the stored secret untouched (so it never round-trips
+ *  to the browser). Admin only. */
+export async function saveCloudinaryConfig(values: { cloudName: string; apiKey: string; apiSecret: string }) {
+  await requireAdmin();
+  const { CLOUDINARY_KEYS } = await import("@/lib/cloudinary-config");
+  const writes: Record<string, string> = {
+    [CLOUDINARY_KEYS.cloudName]: values.cloudName.trim(),
+    [CLOUDINARY_KEYS.apiKey]: values.apiKey.trim(),
+  };
+  if (values.apiSecret.trim()) writes[CLOUDINARY_KEYS.apiSecret] = values.apiSecret.trim();
+  for (const [key, value] of Object.entries(writes)) {
+    await db
+      .insert(settings)
+      .values({ key, value })
+      .onConflictDoUpdate({ target: settings.key, set: { value } });
+  }
+  revalidatePath("/admin/media");
+  revalidatePath("/admin/settings");
+  return { ok: true as const };
+}
+
 /* ============================== Users ============================== */
 
 export async function createUser(data: { email: string; name: string; password: string; role: "admin" | "editor" }) {

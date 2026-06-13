@@ -1,7 +1,7 @@
 <svg width="208" height="44" viewBox="0 0 208 44" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Slim Minima">
-  <rect x="2" y="2" width="40" height="40" rx="9" fill="#4338ca"/>
+  <rect x="2" y="2" width="40" height="40" rx="9" fill="#111111"/>
   <path d="M13 31V15M21.5 31V15M30 31V15M13 15H30" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-  <text x="54" y="29" font-family="Manrope, 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="22" font-weight="800" letter-spacing="-0.6">
-    <tspan fill="#15132e">slim</tspan><tspan fill="#4338ca"> minima</tspan>
+  <text x="54" y="29" font-family="Manrope, 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="22" letter-spacing="-0.6">
+    <tspan fill="#111111" font-weight="800">slim</tspan><tspan fill="#111111" font-weight="500"> minima</tspan>
   </text>
 </svg>

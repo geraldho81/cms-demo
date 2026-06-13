@@ -1,9 +1,13 @@
 import "server-only";
+import { getCloudinaryCreds } from "./cloudinary-config";
+
+export { isCloudinaryConfigured } from "./cloudinary-config";
 
 /**
  * Server-side Cloudinary Admin API client. The media library reads directly
  * from Cloudinary so anything on the instance (uploaded via the CMS or a CLI
  * agent) shows up, and deleting in the library removes it from Cloudinary.
+ * Credentials come from env vars or, if unset, from the CMS settings.
  */
 
 export type CloudinaryItem = {
@@ -32,15 +36,13 @@ type Resource = {
   context?: { custom?: { alt?: string } };
 };
 
-function config() {
-  const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
-  const apiKey = process.env.CLOUDINARY_API_KEY;
-  const apiSecret = process.env.CLOUDINARY_API_SECRET;
-  if (!cloudName || !apiKey || !apiSecret) {
-    throw new Error("Cloudinary is not configured (CLOUDINARY_CLOUD_NAME/API_KEY/API_SECRET).");
+async function config() {
+  const creds = await getCloudinaryCreds();
+  if (!creds) {
+    throw new Error("Cloudinary is not configured. Add your credentials in Settings or via env vars.");
   }
-  const auth = Buffer.from(`${apiKey}:${apiSecret}`).toString("base64");
-  return { cloudName, auth, base: `https://api.cloudinary.com/v1_1/${cloudName}` };
+  const auth = Buffer.from(`${creds.apiKey}:${creds.apiSecret}`).toString("base64");
+  return { cloudName: creds.cloudName, auth, base: `https://api.cloudinary.com/v1_1/${creds.cloudName}` };
 }
 
 function mimeType(r: Resource): string {
@@ -68,7 +70,7 @@ function toItem(r: Resource): CloudinaryItem {
 }
 
 async function listType(resourceType: "image" | "raw" | "video"): Promise<Resource[]> {
-  const { base, auth } = config();
+  const { base, auth } = await config();
   const out: Resource[] = [];
   let cursor: string | undefined;
   do {
@@ -96,7 +98,7 @@ export async function listCloudinaryMedia(): Promise<CloudinaryItem[]> {
 }
 
 export async function deleteCloudinaryMedia(publicId: string, resourceType = "image"): Promise<void> {
-  const { base, auth } = config();
+  const { base, auth } = await config();
   const url = new URL(`${base}/resources/${resourceType}/upload`);
   url.searchParams.append("public_ids[]", publicId);
   const res = await fetch(url, { method: "DELETE", headers: { Authorization: `Basic ${auth}` } });
@@ -104,7 +106,7 @@ export async function deleteCloudinaryMedia(publicId: string, resourceType = "im
 }
 
 export async function setCloudinaryAlt(publicId: string, alt: string, resourceType = "image"): Promise<void> {
-  const { base, auth } = config();
+  const { base, auth } = await config();
   const res = await fetch(`${base}/resources/${resourceType}/upload/${publicId}`, {
     method: "POST",
     headers: { Authorization: `Basic ${auth}`, "Content-Type": "application/x-www-form-urlencoded" },

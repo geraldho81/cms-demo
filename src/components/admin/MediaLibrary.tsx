@@ -32,7 +32,15 @@ function toTrashInput(m: MediaItem) {
   };
 }
 
-export function MediaLibrary({ initial, trashCount = 0 }: { initial: MediaItem[]; trashCount?: number }) {
+export function MediaLibrary({
+  initial,
+  trashCount = 0,
+  cloudinaryConfigured = true,
+}: {
+  initial: MediaItem[];
+  trashCount?: number;
+  cloudinaryConfigured?: boolean;
+}) {
   const [items, setItems] = useState(initial);
   const [selected, setSelected] = useState<MediaItem | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -100,17 +108,38 @@ export function MediaLibrary({ initial, trashCount = 0 }: { initial: MediaItem[]
           <Link className="ad-btn ad-btn-soft" href="/admin/media/trash">
             Trash{trashCount > 0 ? ` (${trashCount})` : ""}
           </Link>
-          <button className="ad-btn ad-btn-primary" onClick={() => fileRef.current?.click()} disabled={uploading}>
+          <button
+            className="ad-btn ad-btn-primary"
+            onClick={() => fileRef.current?.click()}
+            disabled={uploading || !cloudinaryConfigured}
+            title={cloudinaryConfigured ? "" : "Connect Cloudinary in Settings to upload"}
+          >
             {uploading ? "Uploading..." : "Upload"}
           </button>
         </div>
         <input ref={fileRef} type="file" accept="image/*,application/pdf" multiple hidden onChange={(e) => handleFiles(e.target.files)} />
       </div>
 
-      <p className="mb-4 rounded-lg px-3 py-2 text-xs" style={{ background: "var(--ad-accent-soft)", color: "var(--ad-muted)" }}>
-        Note: Cloudinary blocks delivery of PDF and ZIP files by default. To allow them, open your Cloudinary console and go to
-        Settings -&gt; Security -&gt; &quot;PDF and ZIP files delivery&quot;, then tick &quot;Allow delivery of PDF and ZIP files&quot;.
-      </p>
+      {!cloudinaryConfigured ? (
+        <div className="mb-4 rounded-xl p-5" style={{ background: "#fff7ed" }}>
+          <p className="mb-1 text-sm font-semibold" style={{ color: "#9a3412" }}>
+            Cloudinary is not connected
+          </p>
+          <p className="text-sm" style={{ color: "#9a3412" }}>
+            The media library needs a Cloudinary account to store and serve files. Add your Cloud name,
+            API key and API secret in{" "}
+            <Link href="/admin/settings" className="underline font-medium">
+              Settings
+            </Link>{" "}
+            (or set the <code>CLOUDINARY_*</code> environment variables). It is free to start at cloudinary.com.
+          </p>
+        </div>
+      ) : (
+        <p className="mb-4 rounded-lg px-3 py-2 text-xs" style={{ background: "var(--ad-accent-soft)", color: "var(--ad-muted)" }}>
+          Note: Cloudinary blocks delivery of PDF and ZIP files by default. To allow them, open your Cloudinary console and go to
+          Settings -&gt; Security -&gt; &quot;PDF and ZIP files delivery&quot;, then tick &quot;Allow delivery of PDF and ZIP files&quot;.
+        </p>
+      )}
       {error && <p className="mb-4 text-sm" style={{ color: "var(--ad-danger)" }}>{error}</p>}
 
       {picked.size > 0 && (
