@@ -615,6 +615,19 @@ export async function resetUserPassword(id: string, password: string) {
   await db.update(users).set({ passwordHash }).where(eq(users.id, id));
 }
 
+// Any signed-in user (admin or editor) can change their own password.
+export async function changeOwnPassword(currentPassword: string, newPassword: string) {
+  const me = await requireUser();
+  if (newPassword.length < 8) throw new Error("New password must be at least 8 characters.");
+  const [user] = await db.select().from(users).where(eq(users.id, me.id)).limit(1);
+  if (!user) throw new Error("Account not found.");
+  const ok = await bcrypt.compare(currentPassword, user.passwordHash);
+  if (!ok) throw new Error("Current password is incorrect.");
+  const passwordHash = await bcrypt.hash(newPassword, 10);
+  await db.update(users).set({ passwordHash }).where(eq(users.id, me.id));
+  return { ok: true as const };
+}
+
 /* ============================== API keys ============================== */
 
 export async function createApiKey(name: string) {

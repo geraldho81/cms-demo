@@ -15,6 +15,7 @@ const NAV = [
   { href: "/admin/redirects", label: "Redirects" },
   { href: "/admin/settings", label: "Settings", adminOnly: true },
   { href: "/admin/users", label: "Users", adminOnly: true },
+  { href: "/admin/account", label: "Account" },
 ];
 
 export function AdminSidebar({ userName, role }: { userName: string; role: "admin" | "editor" }) {
