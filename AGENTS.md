@@ -230,7 +230,8 @@ export default defineBlock<Props>({
    settings form, validation, REST API, and renderer pick it up automatically.
 
 Field kinds: `text`, `textarea`, `number`, `toggle`, `select` (with options),
-`image` (media picker), `richtext` (Tiptap), `list` (repeatable group).
+`image` (media picker), `page` (picker of the site's own pages, stores the
+public path), `richtext` (Tiptap), `list` (repeatable group).
 
 Rules for `Render`:
 - Pure synchronous component - no hooks, no async.

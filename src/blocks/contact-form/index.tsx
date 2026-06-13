@@ -92,7 +92,7 @@ export default defineBlock<Props>({
       ],
     },
     { kind: "textarea", name: "successMessage", label: "Thank-you message (inline)", rows: 2 },
-    { kind: "text", name: "successPath", label: "Redirect path (e.g. /thank-you)" },
+    { kind: "page", name: "successPath", label: "Thank-you page (redirect)", placeholder: "Select a thank-you page..." },
   ],
   // Sign the receiver server-side so the browser never carries a forgeable
   // recipient address (see src/lib/contact-token.ts).

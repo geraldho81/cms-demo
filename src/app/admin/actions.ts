@@ -2,7 +2,7 @@
 
 import { revalidateTag, revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { eq, desc, and, ne, sql, inArray } from "drizzle-orm";
+import { eq, desc, and, ne, sql, inArray, isNull } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { createHash, randomBytes } from "crypto";
 import { db } from "@/db";
@@ -357,6 +357,22 @@ export async function deleteCategory(id: string) {
 export async function listCategories() {
   await requireUser();
   return db.select().from(categories).orderBy(categories.name);
+}
+
+// Pages available to pick as a destination (e.g. a thank-you page). Returns the
+// public path and title for each live page, so marketers select instead of typing.
+export async function listPagesForPicker() {
+  await requireUser();
+  const rows = await db
+    .select({ slug: pages.slug, title: pages.title, status: pages.status })
+    .from(pages)
+    .where(isNull(pages.deletedAt))
+    .orderBy(pages.title);
+  return rows.map((p) => ({
+    path: p.slug === "home" ? "/" : `/${p.slug}`,
+    title: p.title,
+    status: p.status,
+  }));
 }
 
 /* ============================== Tags ============================== */

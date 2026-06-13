@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { FieldSpec } from "@/blocks/types";
+import { listPagesForPicker } from "@/app/admin/actions";
 import { MediaPicker } from "@/components/admin/MediaPicker";
 import { CloudinaryNotice } from "@/components/admin/CloudinaryNotice";
 import { RichTextField } from "@/components/admin/editor/RichTextField";
@@ -90,6 +91,8 @@ function Field({ field, value, onChange }: { field: FieldSpec; value: unknown; o
       );
     case "image":
       return <ImageField label={field.label} value={(value as string) ?? ""} onChange={onChange} />;
+    case "page":
+      return <PageField label={field.label} placeholder={field.placeholder} value={(value as string) ?? ""} onChange={onChange} />;
     case "richtext":
       return (
         <div className="ad-field">
@@ -125,6 +128,50 @@ function ImageField({ label, value, onChange }: { label: string; value: string; 
       </div>
       <CloudinaryNotice className="mt-1.5" />
       {open && <MediaPicker onSelect={onChange} onClose={() => setOpen(false)} />}
+    </div>
+  );
+}
+
+type PageOption = { path: string; title: string; status: string };
+
+function PageField({
+  label,
+  placeholder,
+  value,
+  onChange,
+}: {
+  label: string;
+  placeholder?: string;
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  const [pages, setPages] = useState<PageOption[] | null>(null);
+
+  useEffect(() => {
+    listPagesForPicker()
+      .then(setPages)
+      .catch(() => setPages([]));
+  }, []);
+
+  // The stored value may point at a page that no longer exists (or one not yet
+  // loaded); keep it selectable so it is never silently dropped.
+  const known = pages?.some((p) => p.path === value);
+
+  return (
+    <div className="ad-field">
+      <label className="ad-label">{label}</label>
+      <select className="ad-select" value={value} onChange={(e) => onChange(e.target.value)}>
+        <option value="">{placeholder ?? "Select a page..."}</option>
+        {pages?.map((p) => (
+          <option key={p.path} value={p.path}>
+            {p.title} ({p.path}){p.status !== "published" ? " - draft" : ""}
+          </option>
+        ))}
+        {value && !known && <option value={value}>{value}</option>}
+      </select>
+      <p className="mt-1 text-[11px]" style={{ color: "var(--ad-muted)" }}>
+        Pick a page you have created. Create the thank-you page first under Pages, then choose it here.
+      </p>
     </div>
   );
 }
