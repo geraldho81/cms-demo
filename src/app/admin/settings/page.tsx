@@ -1,12 +1,12 @@
 import { desc } from "drizzle-orm";
 import { db } from "@/db";
 import { apiKeys, settings } from "@/db/schema";
-import { requireUser } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth";
 import { SettingsForm } from "@/components/admin/SettingsForm";
 import { ApiKeysSection } from "@/components/admin/ApiKeysSection";
 
 export default async function SettingsPage() {
-  const user = await requireUser();
+  const user = await requireAdmin();
   const [rows, keys] = await Promise.all([
     db.select().from(settings),
     db.select({ id: apiKeys.id, name: apiKeys.name, createdAt: apiKeys.createdAt, lastUsedAt: apiKeys.lastUsedAt }).from(apiKeys).orderBy(desc(apiKeys.createdAt)),

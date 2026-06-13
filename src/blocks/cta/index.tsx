@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { defineBlock } from "@/blocks/types";
+import { safeHref } from "@/lib/content";
 
 const schema = z.object({
   heading: z.string(),
@@ -47,7 +48,7 @@ export default defineBlock<Props>({
           {p.body && <p>{p.body}</p>}
         </div>
         {p.buttonLabel && (
-          <a className={`cms-btn ${p.tone === "accent" ? "cms-btn-inverse" : "cms-btn-primary"}`} href={p.buttonHref || "#"}>
+          <a className={`cms-btn ${p.tone === "accent" ? "cms-btn-inverse" : "cms-btn-primary"}`} href={safeHref(p.buttonHref)}>
             {p.buttonLabel}
           </a>
         )}

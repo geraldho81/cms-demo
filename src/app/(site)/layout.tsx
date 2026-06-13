@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getMenu, getSettings } from "@/lib/queries";
 import type { MenuItem } from "@/db/schema";
+import { safeHref } from "@/lib/content";
 import { GoogleTagManager } from "@/components/site/GoogleTagManager";
 import { SiteHeader } from "@/components/site/SiteHeader";
 
@@ -30,12 +31,12 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
           </div>
           <nav>
             {footer.map((item) => (
-              <Link key={item.href} href={item.href}>
+              <Link key={item.href} href={safeHref(item.href)}>
                 {item.label}
               </Link>
             ))}
             {settings.social.map((item) => (
-              <a key={item.href} href={item.href} target="_blank" rel="noreferrer">
+              <a key={item.href} href={safeHref(item.href)} target="_blank" rel="noreferrer">
                 {item.label}
               </a>
             ))}

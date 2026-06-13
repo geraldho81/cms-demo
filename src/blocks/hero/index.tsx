@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { defineBlock } from "@/blocks/types";
+import { safeHref } from "@/lib/content";
 
 const schema = z.object({
   eyebrow: z.string(),
@@ -65,12 +66,12 @@ export default defineBlock<Props>({
             {(p.primaryLabel || p.secondaryLabel) && (
               <div className="cms-hero-actions">
                 {p.primaryLabel && (
-                  <a className="cms-btn cms-btn-primary" href={p.primaryHref || "#"}>
+                  <a className="cms-btn cms-btn-primary" href={safeHref(p.primaryHref)}>
                     {p.primaryLabel}
                   </a>
                 )}
                 {p.secondaryLabel && (
-                  <a className="cms-btn cms-btn-ghost" href={p.secondaryHref || "#"}>
+                  <a className="cms-btn cms-btn-ghost" href={safeHref(p.secondaryHref)}>
                     {p.secondaryLabel}
                   </a>
                 )}

@@ -22,6 +22,22 @@ export function readingTime(text: string): string {
   return `${Math.max(1, Math.round(words / 220))} min read`;
 }
 
+/**
+ * Sanitize an author-supplied link href. Allows http(s), mailto, tel, and
+ * relative/anchor/query links; blocks dangerous schemes (javascript:, data:,
+ * vbscript:, ...). Returns "#" for anything blocked or empty.
+ */
+export function safeHref(href: string | null | undefined): string {
+  const h = (href ?? "").trim();
+  if (!h) return "#";
+  // Normalize the way browsers do (they ignore control chars/whitespace inside
+  // a scheme) before testing, so tricks like "java\tscript:" can't slip through.
+  const probe = h.replace(/[\x00-\x20]+/g, "").toLowerCase();
+  if (/^(https?:|mailto:|tel:)/.test(probe)) return h;
+  if (/^[a-z][a-z0-9+.-]*:/.test(probe)) return "#"; // any other explicit scheme
+  return h; // relative path, anchor, or query string
+}
+
 export function formatDate(date: Date | string | null): string {
   if (!date) return "";
   return new Date(date).toLocaleDateString("en-US", {

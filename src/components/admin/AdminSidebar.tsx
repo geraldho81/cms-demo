@@ -13,7 +13,7 @@ const NAV = [
   { href: "/admin/media", label: "Media" },
   { href: "/admin/menus", label: "Menus" },
   { href: "/admin/redirects", label: "Redirects" },
-  { href: "/admin/settings", label: "Settings" },
+  { href: "/admin/settings", label: "Settings", adminOnly: true },
   { href: "/admin/users", label: "Users", adminOnly: true },
 ];
 

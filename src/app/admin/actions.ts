@@ -513,7 +513,7 @@ export async function saveMenu(name: string, items: MenuItem[]) {
 /* ============================== Settings ============================== */
 
 export async function saveSettings(values: Record<string, unknown>) {
-  await requireUser();
+  await requireAdmin();
   for (const [key, value] of Object.entries(values)) {
     await db
       .insert(settings)

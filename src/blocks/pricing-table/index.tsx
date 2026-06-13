@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { defineBlock } from "@/blocks/types";
+import { safeHref } from "@/lib/content";
 
 const schema = z.object({
   heading: z.string(),
@@ -94,7 +95,7 @@ export default defineBlock<Props>({
                 ))}
             </ul>
             {tier.buttonLabel && (
-              <a className={`cms-btn ${tier.highlighted ? "cms-btn-primary" : "cms-btn-ghost"}`} href={tier.buttonHref || "#"}>
+              <a className={`cms-btn ${tier.highlighted ? "cms-btn-primary" : "cms-btn-ghost"}`} href={safeHref(tier.buttonHref)}>
                 {tier.buttonLabel}
               </a>
             )}

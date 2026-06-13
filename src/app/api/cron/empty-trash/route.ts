@@ -11,7 +11,10 @@ export const dynamic = "force-dynamic";
 
 function authorized(req: Request): boolean {
   const secret = process.env.CRON_SECRET;
-  if (!secret) return true; // No secret set: allow (e.g. local dev). Set one in prod.
+  if (!secret) {
+    // Fail closed in production; allow only in local dev where no secret is set.
+    return process.env.NODE_ENV !== "production";
+  }
   return req.headers.get("authorization") === `Bearer ${secret}`;
 }
 
