@@ -6,6 +6,8 @@ import { SettingsForm } from "@/components/admin/SettingsForm";
 import { CloudinarySettings } from "@/components/admin/CloudinarySettings";
 import { IntegrationsSettings } from "@/components/admin/IntegrationsSettings";
 import { ApiKeysSection } from "@/components/admin/ApiKeysSection";
+import { McpConnector } from "@/components/admin/McpConnector";
+import { siteUrl } from "@/lib/site-url";
 
 export default async function SettingsPage() {
   const user = await requireAdmin();
@@ -57,13 +59,22 @@ export default async function SettingsPage() {
         env={integrationsEnv}
       />
       {user.role === "admin" && (
-        <ApiKeysSection
-          initial={keys.map((k) => ({
-            ...k,
-            createdAt: k.createdAt.toISOString(),
-            lastUsedAt: k.lastUsedAt?.toISOString() ?? null,
-          }))}
-        />
+        <>
+          <McpConnector
+            serverUrl={`${siteUrl()}/api/mcp`}
+            keyExists={keys.some((k) => k.name === "MCP connector")}
+            cloudinaryConnected={envManaged || !!map.cloudinaryApiSecret}
+          />
+          <ApiKeysSection
+            initial={keys
+              .filter((k) => k.name !== "MCP connector")
+              .map((k) => ({
+                ...k,
+                createdAt: k.createdAt.toISOString(),
+                lastUsedAt: k.lastUsedAt?.toISOString() ?? null,
+              }))}
+          />
+        </>
       )}
     </div>
   );

@@ -1,5 +1,7 @@
 import "server-only";
+import { createHash } from "crypto";
 import { getCloudinaryCreds } from "./cloudinary-config";
+import { getCloudinaryFolder } from "./integration-config";
 
 export { isCloudinaryConfigured } from "./cloudinary-config";
 
@@ -103,6 +105,44 @@ export async function deleteCloudinaryMedia(publicId: string, resourceType = "im
   url.searchParams.append("public_ids[]", publicId);
   const res = await fetch(url, { method: "DELETE", headers: { Authorization: `Basic ${auth}` } });
   if (!res.ok) throw new Error(`Cloudinary delete failed (${res.status}): ${(await res.text()).slice(0, 160)}`);
+}
+
+/**
+ * Upload a remote image into the user's Cloudinary from its URL (Cloudinary
+ * fetches it server-side). Used by the MCP connector so AI-supplied image URLs
+ * become hosted, permanent assets in the user's own media library.
+ */
+export async function uploadFromUrl(
+  remoteUrl: string,
+  opts: { alt?: string } = {}
+): Promise<CloudinaryItem> {
+  const creds = await getCloudinaryCreds();
+  if (!creds) {
+    throw new Error("Cloudinary is not configured. Add your credentials in Settings or via env vars.");
+  }
+  const folder = await getCloudinaryFolder();
+  const timestamp = Math.floor(Date.now() / 1000);
+
+  // Signed upload: sha1 of the alphabetically sorted params + API secret.
+  const params: Record<string, string> = { folder, timestamp: String(timestamp) };
+  if (opts.alt) params.context = `alt=${opts.alt}`;
+  const toSign =
+    Object.keys(params)
+      .sort()
+      .map((k) => `${k}=${params[k]}`)
+      .join("&") + creds.apiSecret;
+  const signature = createHash("sha1").update(toSign).digest("hex");
+
+  const form = new URLSearchParams({ ...params, file: remoteUrl, api_key: creds.apiKey, signature });
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${creds.cloudName}/image/upload`, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: form,
+  });
+  if (!res.ok) {
+    throw new Error(`Cloudinary upload failed (${res.status}): ${(await res.text()).slice(0, 200)}`);
+  }
+  return toItem((await res.json()) as Resource);
 }
 
 export async function setCloudinaryAlt(publicId: string, alt: string, resourceType = "image"): Promise<void> {
