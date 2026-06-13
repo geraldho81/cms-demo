@@ -1,8 +1,5 @@
-import { createHash } from "crypto";
-import { eq } from "drizzle-orm";
-import { db } from "@/db";
-import { apiKeys } from "@/db/schema";
 import { MCP_TOOLS, callTool } from "@/lib/mcp/tools";
+import { verifyMcpToken } from "@/lib/mcp/token";
 
 /**
  * Streamable HTTP MCP server core. Speaks JSON-RPC 2.0 over a single POST,
@@ -39,15 +36,6 @@ const INSTRUCTIONS =
   "New posts land as drafts unless you pass status:'published'. Set a category by name and it is created if missing. Field names are forgiving - snake_case aliases like hero_image_url are accepted everywhere.";
 
 type RpcMessage = { jsonrpc?: string; id?: unknown; method?: string; params?: Record<string, unknown> };
-
-async function resolveToken(token: string): Promise<boolean> {
-  if (!token) return false;
-  const keyHash = createHash("sha256").update(token).digest("hex");
-  const [row] = await db.select({ id: apiKeys.id }).from(apiKeys).where(eq(apiKeys.keyHash, keyHash)).limit(1);
-  if (!row) return false;
-  db.update(apiKeys).set({ lastUsedAt: new Date() }).where(eq(apiKeys.id, row.id)).catch(() => {});
-  return true;
-}
 
 async function handleRpcMessage(msg: RpcMessage): Promise<Record<string, unknown> | null> {
   // Notifications (no id) need no response.
@@ -120,7 +108,7 @@ export async function handleMcpPost(request: Request, token: string): Promise<Re
     if (authHeader.toLowerCase().startsWith("bearer ")) resolved = authHeader.slice(7).trim();
   }
 
-  if (!(await resolveToken(resolved))) {
+  if (!(await verifyMcpToken(resolved))) {
     return mcpJson(rpcError(null, -32001, "Invalid or missing Slim Minima MCP token"), 401);
   }
 

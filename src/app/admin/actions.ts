@@ -15,6 +15,7 @@ import { listCloudinaryMedia, deleteCloudinaryMedia, setCloudinaryAlt } from "@/
 import { CACHE_TAGS } from "@/lib/queries";
 import { slugify } from "@/lib/content";
 import { pingPagesIndexNow, pingPostsIndexNow } from "@/lib/indexnow";
+import { regenerateMcpToken } from "@/lib/mcp/token";
 
 function bumpPages() {
   revalidateTag(CACHE_TAGS.pages, "max");
@@ -673,24 +674,12 @@ export async function deleteApiKey(id: string) {
 
 /* ============================== MCP connector ============================== */
 
-// The MCP connector reuses the api_keys table with a reserved name so the
-// settings UI can manage a single token separate from REST API keys.
-const MCP_KEY_NAME = "MCP connector";
-
-export async function generateMcpKey() {
+// The connector token is auto-provisioned (see src/lib/mcp/token.ts); this only
+// rotates it when an admin asks for a fresh one. The old token stops working
+// immediately.
+export async function rotateMcpToken() {
   await requireAdmin();
-  // Regenerate: revoke any previous connector token first so only one is live.
-  await db.delete(apiKeys).where(eq(apiKeys.name, MCP_KEY_NAME));
-  const raw = `mcp_${randomBytes(24).toString("hex")}`;
-  const keyHash = createHash("sha256").update(raw).digest("hex");
-  await db.insert(apiKeys).values({ name: MCP_KEY_NAME, keyHash });
+  const token = await regenerateMcpToken();
   revalidatePath("/admin/settings");
-  // Returned once - only the hash is stored.
-  return raw;
-}
-
-export async function disableMcpKey() {
-  await requireAdmin();
-  await db.delete(apiKeys).where(eq(apiKeys.name, MCP_KEY_NAME));
-  revalidatePath("/admin/settings");
+  return token;
 }

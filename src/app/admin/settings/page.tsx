@@ -8,6 +8,7 @@ import { IntegrationsSettings } from "@/components/admin/IntegrationsSettings";
 import { ApiKeysSection } from "@/components/admin/ApiKeysSection";
 import { McpConnector } from "@/components/admin/McpConnector";
 import { siteUrl } from "@/lib/site-url";
+import { getOrCreateMcpToken } from "@/lib/mcp/token";
 
 export default async function SettingsPage() {
   const user = await requireAdmin();
@@ -62,17 +63,15 @@ export default async function SettingsPage() {
         <>
           <McpConnector
             serverUrl={`${siteUrl()}/api/mcp`}
-            keyExists={keys.some((k) => k.name === "MCP connector")}
+            token={await getOrCreateMcpToken()}
             cloudinaryConnected={envManaged || !!map.cloudinaryApiSecret}
           />
           <ApiKeysSection
-            initial={keys
-              .filter((k) => k.name !== "MCP connector")
-              .map((k) => ({
-                ...k,
-                createdAt: k.createdAt.toISOString(),
-                lastUsedAt: k.lastUsedAt?.toISOString() ?? null,
-              }))}
+            initial={keys.map((k) => ({
+              ...k,
+              createdAt: k.createdAt.toISOString(),
+              lastUsedAt: k.lastUsedAt?.toISOString() ?? null,
+            }))}
           />
         </>
       )}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { generateMcpKey, disableMcpKey } from "@/app/admin/actions";
+import { rotateMcpToken } from "@/app/admin/actions";
 
 function CopyField({ label, value }: { label: string; value: string }) {
   const [copied, setCopied] = useState(false);
@@ -32,18 +32,15 @@ function CopyField({ label, value }: { label: string; value: string }) {
 
 export function McpConnector({
   serverUrl,
-  keyExists,
+  token,
   cloudinaryConnected,
 }: {
   serverUrl: string;
-  keyExists: boolean;
+  token: string;
   cloudinaryConnected: boolean;
 }) {
-  const [token, setToken] = useState<string | null>(null);
+  const [current, setCurrent] = useState(token);
   const [busy, setBusy] = useState(false);
-  const [exists, setExists] = useState(keyExists);
-
-  const tokenizedUrl = token ? `${serverUrl}/${token}` : null;
 
   return (
     <section className="mt-6 rounded-xl bg-white p-5">
@@ -51,63 +48,33 @@ export function McpConnector({
       <p className="mb-4 text-xs" style={{ color: "var(--ad-muted)" }}>
         Connect ChatGPT, Claude, Perplexity or Grok to this site. The assistant can read your pages and posts and write blog
         posts (create and update). It cannot edit pages or delete anything. Images are added through your Cloudinary when
-        connected, or by URL otherwise.
+        connected, or by URL otherwise. Your connector is ready - just copy the details below into your AI client.
       </p>
 
       <CopyField label="MCP server URL" value={serverUrl} />
+      <CopyField label="Token (paste in the connector's API key / token field)" value={current} />
+      <CopyField label="One-line URL (for clients with only a URL field - token included)" value={`${serverUrl}/${current}`} />
 
-      {token && tokenizedUrl ? (
-        <div className="mb-4 rounded-lg p-3" style={{ background: "var(--ad-accent-soft)" }}>
-          <p className="mb-2 text-xs font-semibold" style={{ color: "var(--ad-accent)" }}>
-            Copy your token now - it will not be shown again.
-          </p>
-          <CopyField label="Token (paste in the connector's API key / token field)" value={token} />
-          <CopyField label="One-line URL (for clients with only a URL field - token included)" value={tokenizedUrl} />
-        </div>
-      ) : null}
-
-      <div className="mb-4 flex flex-wrap gap-2">
+      <div className="mb-4 flex flex-wrap items-center gap-3">
         <button
-          className="ad-btn ad-btn-primary"
+          className="ad-btn ad-btn-danger"
           disabled={busy}
           onClick={async () => {
+            if (!confirm("Regenerate the connector token? Any AI client using the current token will stop working until you update it.")) return;
             setBusy(true);
             try {
-              const raw = await generateMcpKey();
-              setToken(raw);
-              setExists(true);
+              setCurrent(await rotateMcpToken());
             } finally {
               setBusy(false);
             }
           }}
         >
-          {exists ? "Regenerate token" : "Generate token"}
+          Regenerate token
         </button>
-        {exists && (
-          <button
-            className="ad-btn ad-btn-danger"
-            disabled={busy}
-            onClick={async () => {
-              setBusy(true);
-              try {
-                await disableMcpKey();
-                setToken(null);
-                setExists(false);
-              } finally {
-                setBusy(false);
-              }
-            }}
-          >
-            Disable
-          </button>
-        )}
+        <span className="text-xs" style={{ color: "var(--ad-muted)" }}>
+          Rotates the token. The old one stops working immediately.
+        </span>
       </div>
-
-      {exists && !token && (
-        <p className="mb-4 text-xs" style={{ color: "var(--ad-muted)" }}>
-          A connector token is active. Regenerate to get a new one (the old token stops working immediately).
-        </p>
-      )}
 
       {!cloudinaryConnected && (
         <p className="mb-4 text-xs" style={{ color: "var(--ad-muted)" }}>

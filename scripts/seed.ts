@@ -160,6 +160,11 @@ async function main() {
     console.log("Created sample post (published)");
   }
 
+  /* ---------- MCP connector token ---------- */
+  const { getOrCreateMcpToken } = await import("../src/lib/mcp/token");
+  const mcpToken = await getOrCreateMcpToken();
+  console.log(`MCP connector token (Admin -> Settings -> AI connector): ${mcpToken}`);
+
   console.log("Seed complete.");
 }
 
