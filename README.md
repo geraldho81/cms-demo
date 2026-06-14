@@ -70,7 +70,7 @@ This repo is the foundation. Open it in Claude Code, Codex, or Cursor and tell
 the agent to build your site. Paste the prompt below to start.
 
 > Prompt to give your agent:
-> "Read `AGENTS.md` first, then `CLAUDE.md`. You are building a marketing site
+> "Read `AGENTS.md` before writing any code. You are building a marketing site
 > on top of Slim Minima. Do not change the CMS internals unless I ask. Build my
 > pages by adding/editing blocks, add new block types when needed, and retheme
 > by editing the CSS variables. Run `npm run typecheck` and `npm run build`

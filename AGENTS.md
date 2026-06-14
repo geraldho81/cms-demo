@@ -27,10 +27,11 @@ repo - `origin` points at the Slim Minima framework. **Do not commit a site's
 content or push to that remote.** Treat this like a template you copied from.
 
 Before any git work, run `git remote -v`. If `origin` still contains
-`slim-minima`, detach first: have the user create their own repository and
-either `git remote set-url origin <their-repo>` or re-init git
-(`rm -rf .git && git init`). Only commit and push the site once `origin` is the
-user's own repo. If you are not sure which repo you are on, do not push - ask.
+`slim-minima`, STOP and tell the user to fix it themselves - do not run
+destructive git commands. Show them these options and let them choose:
+- `git remote set-url origin <their-repo>` (point to their own repo)
+- `rm -rf .git && git init` then add their own remote (nuclear option, user runs it)
+Only commit and push once `origin` is the user's own repo. If you are not sure, do not push - ask.
 
 ## Vercel deployments - DO NOT
 
@@ -42,7 +43,7 @@ developing the framework, or anything else. Even if the build is clean. Even if 
 
 ## Stack
 
-- Next.js (App Router) + TypeScript + Tailwind v4, deploys to Vercel
+- Next.js (App Router) + TypeScript + Tailwind v4, hosted on Vercel
 - Neon Postgres via Drizzle ORM (`src/db/schema.ts`)
 - Auth.js v5 credentials auth, roles `admin` / `editor`
 - Tiptap rich text, dnd-kit drag and drop, zod validation
@@ -95,7 +96,7 @@ npm run build        # production build - run before pushing
 npm run typecheck    # tsc --noEmit
 npm run db:generate  # generate SQL migration after editing src/db/schema.ts
 npm run db:migrate   # apply migrations to Neon
-npm run db:push      # push schema directly (dev convenience)
+npm run db:push      # DANGER: pushes schema directly, bypasses migration files - use db:generate + db:migrate instead
 npm run seed         # first admin + sample home/about/blog
 npm run cms -- <cmd> # content CLI, see below
 ```
