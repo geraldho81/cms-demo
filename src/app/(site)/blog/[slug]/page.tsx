@@ -5,7 +5,7 @@ import { getPostBySlug, getRedirect, getSettings } from "@/lib/queries";
 import { isLive, formatDate, readingTime } from "@/lib/content";
 import { auth } from "@/lib/auth";
 import { siteUrl } from "@/lib/site-url";
-import { JsonLd, articleSchema, breadcrumbSchema } from "@/lib/jsonld";
+import { JsonLd, articleSchema, breadcrumbSchema, parseJsonLd } from "@/lib/jsonld";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -63,9 +63,11 @@ export default async function PostPage(props: Props) {
   const settings = await getSettings();
   const plain = post.body.replace(/<[^>]+>/g, " ");
   const base = siteUrl();
+  const customSchemaData = parseJsonLd(post.customSchema);
 
   return (
     <article className="cms-container" style={{ paddingBottom: "3rem" }}>
+      {customSchemaData && <JsonLd data={customSchemaData} />}
       <JsonLd
         data={articleSchema({
           title: post.title,

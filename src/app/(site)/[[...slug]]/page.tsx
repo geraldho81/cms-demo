@@ -5,7 +5,7 @@ import { getPageBySlug, getRedirect, getSettings } from "@/lib/queries";
 import { isLive } from "@/lib/content";
 import { auth } from "@/lib/auth";
 import { siteUrl } from "@/lib/site-url";
-import { JsonLd, websiteSchema, faqSchema } from "@/lib/jsonld";
+import { JsonLd, websiteSchema, faqSchema, parseJsonLd } from "@/lib/jsonld";
 import { collectFaqItems } from "@/lib/block-text";
 
 type Props = {
@@ -70,10 +70,13 @@ export default async function CmsPage(props: Props) {
   const settings = isHome ? await getSettings() : null;
   const faqItems = collectFaqItems(page.blocks);
 
+  const customSchemaData = parseJsonLd(page.customSchema);
+
   return (
     <>
       {settings && <JsonLd data={websiteSchema(settings)} />}
       {faqItems.length > 0 && <JsonLd data={faqSchema(faqItems)} />}
+      {customSchemaData && <JsonLd data={customSchemaData} />}
       <BlockRenderer blocks={page.blocks} />
     </>
   );

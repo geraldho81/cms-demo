@@ -1,5 +1,16 @@
 import { siteUrl } from "@/lib/site-url";
 
+export function parseJsonLd(raw: string | null | undefined): Record<string, unknown> | null {
+  if (!raw?.trim()) return null;
+  try {
+    const parsed = JSON.parse(raw);
+    if (typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)) return parsed;
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 /** Renders a JSON-LD script tag. */
 export function JsonLd({ data }: { data: Record<string, unknown> }) {
   return (

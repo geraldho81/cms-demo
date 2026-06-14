@@ -22,6 +22,7 @@ export type PostData = {
   metaTitle: string | null;
   metaDescription: string | null;
   noindex: boolean;
+  customSchema: string | null;
 };
 
 type CategoryOption = { id: string; name: string };
@@ -110,6 +111,7 @@ export function PostEditor({ initial, categories: initialCategories }: { initial
         metaTitle: current.metaTitle,
         metaDescription: current.metaDescription,
         noindex: current.noindex,
+        customSchema: current.customSchema,
       });
       if (result.slug !== postRef.current.slug) setPost((p) => ({ ...p, slug: result.slug }));
       setSaveState("saved");
@@ -343,6 +345,10 @@ export function PostEditor({ initial, categories: initialCategories }: { initial
                 <input type="checkbox" checked={post.noindex} onChange={(e) => update({ noindex: e.target.checked })} />
                 Hide from search engines (noindex)
               </label>
+              <div className="ad-field">
+                <label className="ad-label">Custom schema markup (JSON-LD)</label>
+                <textarea className="ad-textarea" rows={6} value={post.customSchema ?? ""} onChange={(e) => update({ customSchema: e.target.value || null })} placeholder={'{\n  "@type": "Article",\n  "name": "..."\n}'} style={{ fontFamily: "monospace", fontSize: "12px" }} />
+              </div>
             </details>
 
             <button

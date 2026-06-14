@@ -30,6 +30,7 @@ export type PageData = {
   metaDescription: string | null;
   ogImage: string | null;
   noindex: boolean;
+  customSchema: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -72,6 +73,7 @@ export function PageEditor({ initial }: { initial: PageData }) {
         metaDescription: current.metaDescription,
         ogImage: current.ogImage,
         noindex: current.noindex,
+        customSchema: current.customSchema,
       });
       // Server may normalize the slug
       if (result.slug !== pageRef.current.slug) setPage((p) => ({ ...p, slug: result.slug }));
@@ -456,6 +458,10 @@ function PageInspector({
             <input type="checkbox" checked={page.noindex} onChange={(e) => update({ noindex: e.target.checked })} />
             Hide from search engines (noindex)
           </label>
+          <div className="ad-field">
+            <label className="ad-label">Custom schema markup (JSON-LD)</label>
+            <textarea className="ad-textarea" rows={6} value={page.customSchema ?? ""} onChange={(e) => update({ customSchema: e.target.value || null })} placeholder={'{\n  "@type": "Product",\n  "name": "..."\n}'} style={{ fontFamily: "monospace", fontSize: "12px" }} />
+          </div>
         </>
       )}
     </>

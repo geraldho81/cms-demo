@@ -59,6 +59,7 @@ export type PageSave = {
   metaDescription?: string | null;
   ogImage?: string | null;
   noindex?: boolean;
+  customSchema?: string | null;
 };
 
 export async function savePage(id: string, data: PageSave) {
@@ -78,6 +79,7 @@ export async function savePage(id: string, data: PageSave) {
   if (data.metaDescription !== undefined) update.metaDescription = data.metaDescription;
   if (data.ogImage !== undefined) update.ogImage = data.ogImage;
   if (data.noindex !== undefined) update.noindex = data.noindex;
+  if (data.customSchema !== undefined) update.customSchema = data.customSchema;
 
   const [page] = await db.update(pages).set(update).where(eq(pages.id, id)).returning();
   if (!page) throw new Error("Page not found");
@@ -228,6 +230,7 @@ export type PostSave = {
   metaTitle?: string | null;
   metaDescription?: string | null;
   noindex?: boolean;
+  customSchema?: string | null;
 };
 
 export async function savePost(id: string, data: PostSave) {
@@ -249,6 +252,7 @@ export async function savePost(id: string, data: PostSave) {
   if (data.metaTitle !== undefined) update.metaTitle = data.metaTitle;
   if (data.metaDescription !== undefined) update.metaDescription = data.metaDescription;
   if (data.noindex !== undefined) update.noindex = data.noindex;
+  if (data.customSchema !== undefined) update.customSchema = data.customSchema;
 
   const [post] = await db.update(posts).set(update).where(eq(posts.id, id)).returning();
   if (!post) throw new Error("Post not found");

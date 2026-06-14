@@ -30,6 +30,7 @@ export default async function PostEditorRoute(props: { params: Promise<{ id: str
         metaTitle: post.metaTitle,
         metaDescription: post.metaDescription,
         noindex: post.noindex,
+        customSchema: post.customSchema,
       }}
     />
   );
