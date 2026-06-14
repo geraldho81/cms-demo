@@ -10,8 +10,7 @@ way so you can build the rest of your site with a coding agent like Claude Code
 or Codex. Everything lives in your own Neon Postgres database and your own
 Cloudinary account. Nothing is hosted by us.
 
-Built on Next.js (App Router), Drizzle ORM, Auth.js, and Tailwind. Deploys to
-Vercel.
+Built on Next.js (App Router), Drizzle ORM, Auth.js, and Tailwind.
 
 ## What you get
 
@@ -124,9 +123,11 @@ Lenis animation layer, loaded lazily so they never bloat the initial bundle.
 They are excluded from the build until you wire them in. See
 `extras/immersive/README.md`.
 
-## Deploying to Vercel
+## Deploying
 
-Push to a Git repo, import it in Vercel, and set the environment variables from
-`.env.example`. The media trash bin's 30-day purge runs from a daily cron
-already declared in `vercel.json` (`/api/cron/empty-trash`); set `CRON_SECRET`
-so only Vercel can trigger it.
+Push to a Git repo and deploy to any platform that supports Next.js (Vercel,
+Netlify, Railway, Fly.io, a VPS, etc.). Set the environment variables from
+`.env.example`. The media trash bin's 30-day purge runs from a daily cron -
+`vercel.json` declares it for Vercel (`/api/cron/empty-trash`); on other
+platforms set up an equivalent cron that hits that endpoint. Set `CRON_SECRET`
+so only your platform can trigger it.

@@ -33,17 +33,16 @@ destructive git commands. Show them these options and let them choose:
 - `rm -rf .git && git init` then add their own remote (nuclear option, user runs it)
 Only commit and push once `origin` is the user's own repo. If you are not sure, do not push - ask.
 
-## Vercel deployments - DO NOT
+## Do not deploy without being asked
 
-**Never deploy to Vercel unless the user explicitly says "deploy to Vercel" or "run vercel deploy."**
-Do not use Vercel MCP tools or the Vercel CLI to trigger a deployment proactively.
+**Never deploy or publish this project unless the user explicitly asks you to.**
+Do not trigger deployments via Vercel MCP tools, the Vercel CLI, or any other platform.
 `vercel.json` existing in this repo does not mean you should deploy - it only configures cron jobs.
-The deployment decision always belongs to the user. This applies in all contexts: building a site,
-developing the framework, or anything else. Even if the build is clean. Even if you have the tools.
+The deployment decision belongs to the user, regardless of platform.
 
 ## Stack
 
-- Next.js (App Router) + TypeScript + Tailwind v4, hosted on Vercel
+- Next.js (App Router) + TypeScript + Tailwind v4
 - Neon Postgres via Drizzle ORM (`src/db/schema.ts`)
 - Auth.js v5 credentials auth, roles `admin` / `editor`
 - Tiptap rich text, dnd-kit drag and drop, zod validation
