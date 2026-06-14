@@ -19,6 +19,21 @@ straight from the database and is SEO and GEO ready out of the box.
 You are expected to build sites ON TOP of this foundation: add blocks, retheme,
 and create content. Keep it minimal - that is the brand.
 
+## This is a template, not your project repo
+
+Slim Minima is a starter you build a site ON. When you are building a site, the
+cloned repo is **not** the site's repo and its git remote is **not** the user's
+repo - `origin` points at the Slim Minima framework. **Do not commit a site's
+content or push to that remote.** Treat this like a template you copied from.
+
+Before any git work, run `git remote -v`. If `origin` still contains
+`slim-minima`, detach first: have the user create their own repository and
+either `git remote set-url origin <their-repo>` or re-init git
+(`rm -rf .git && git init`). Only commit and push the site once `origin` is the
+user's own repo. If you are not sure which repo you are on, do not push - ask.
+(The only time pushing to the Slim Minima remote is correct is when you are
+developing the framework itself, not building a site. See `CLAUDE.md`.)
+
 ## Stack
 
 - Next.js (App Router) + TypeScript + Tailwind v4, deploys to Vercel
