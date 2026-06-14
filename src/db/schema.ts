@@ -130,23 +130,23 @@ export type ContactField = {
   fullWidth: boolean;
 };
 
-// Reusable contact forms: build once under /admin/contacts, drop on any page by
-// picking from a dropdown. The form owns the fields, where submissions go, and
-// what happens after submit; the block owns the surrounding presentation copy.
-export const contactForms = pgTable("contact_forms", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  name: text("name").notNull(),
-  fields: jsonb("fields").$type<ContactField[]>().notNull().default([]),
-  submitLabel: text("submit_label").notNull().default("Send message"),
-  receiverEmail: text("receiver_email").notNull().default(""),
+// A reusable contact form: built once under /admin/contacts, dropped on any page
+// by picking from a dropdown. Stored as an array in the existing `settings` table
+// (key "contactForms"), so adding this feature needs no migration on any install.
+// The form owns the fields, where submissions go, and what happens after submit;
+// the block owns the surrounding presentation copy.
+export type ContactForm = {
+  id: string;
+  name: string;
+  fields: ContactField[];
+  submitLabel: string;
+  receiverEmail: string;
   // Labels submissions in contact_submissions (matched by form_name).
-  formName: text("form_name").notNull().default("Contact"),
-  successMode: text("success_mode").$type<"inline" | "redirect">().notNull().default("inline"),
-  successMessage: text("success_message").notNull().default("Thanks. We'll be in touch shortly."),
-  successPath: text("success_path").notNull().default("/thank-you"),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
-});
+  formName: string;
+  successMode: "inline" | "redirect";
+  successMessage: string;
+  successPath: string;
+};
 
 export const contactSubmissions = pgTable("contact_submissions", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -192,5 +192,4 @@ export type Post = typeof posts.$inferSelect;
 export type Media = typeof media.$inferSelect;
 export type MediaTrash = typeof mediaTrash.$inferSelect;
 export type Menu = typeof menus.$inferSelect;
-export type ContactForm = typeof contactForms.$inferSelect;
 export type ContactSubmission = typeof contactSubmissions.$inferSelect;

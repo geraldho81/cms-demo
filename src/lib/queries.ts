@@ -1,7 +1,8 @@
 import { unstable_cache } from "next/cache";
 import { eq, desc, inArray, and, isNull } from "drizzle-orm";
 import { db } from "@/db";
-import { pages, posts, menus, settings, users, categories, redirects, contactForms } from "@/db/schema";
+import { pages, posts, menus, settings, users, categories, redirects } from "@/db/schema";
+import type { ContactForm } from "@/db/schema";
 import { isLive } from "@/lib/content";
 
 export const CACHE_TAGS = {
@@ -126,15 +127,23 @@ export const getMenu = (name: string) =>
     { tags: [CACHE_TAGS.menus], revalidate: 60 }
   )();
 
-export const getContactFormById = (id: string) =>
-  unstable_cache(
-    async () => {
-      const rows = await db.select().from(contactForms).where(eq(contactForms.id, id)).limit(1);
-      return rows[0] ?? null;
-    },
-    ["contact-form", id],
-    { tags: [CACHE_TAGS.contactForms], revalidate: 60 }
-  )();
+// Reusable forms live as an array under the "contactForms" settings key - no
+// dedicated table, so the feature drops into any install without a migration.
+export const CONTACT_FORMS_KEY = "contactForms";
+
+export const getContactForms = unstable_cache(
+  async (): Promise<ContactForm[]> => {
+    const rows = await db.select().from(settings).where(eq(settings.key, CONTACT_FORMS_KEY)).limit(1);
+    return (rows[0]?.value as ContactForm[] | undefined) ?? [];
+  },
+  ["contact-forms"],
+  { tags: [CACHE_TAGS.contactForms], revalidate: 60 }
+);
+
+export async function getContactFormById(id: string): Promise<ContactForm | null> {
+  const all = await getContactForms();
+  return all.find((f) => f.id === id) ?? null;
+}
 
 export type SiteSettings = {
   siteName: string;

@@ -1,10 +1,11 @@
 import { sql } from "drizzle-orm";
 import { db } from "@/db";
-import { contactForms, contactSubmissions } from "@/db/schema";
+import { contactSubmissions } from "@/db/schema";
+import { getContactForms } from "@/lib/queries";
 import { ContactsManager, type FormRow } from "@/components/admin/ContactsManager";
 
 export default async function ContactsPage() {
-  const forms = await db.select().from(contactForms).orderBy(contactForms.name);
+  const forms = (await getContactForms()).slice().sort((a, b) => a.name.localeCompare(b.name));
   const counts = await db
     .select({ formName: contactSubmissions.formName, count: sql<number>`count(*)::int` })
     .from(contactSubmissions)

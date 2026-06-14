@@ -4,11 +4,12 @@ import { revalidateTag, revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { eq, desc, and, ne, sql, inArray, isNull } from "drizzle-orm";
 import bcrypt from "bcryptjs";
-import { createHash, randomBytes } from "crypto";
+import { createHash, randomBytes, randomUUID } from "crypto";
 import { db } from "@/db";
-import { pages, pageRevisions, posts, menus, settings, users, apiKeys, categories, redirects, mediaTrash, contactForms, contactSubmissions } from "@/db/schema";
+import { pages, pageRevisions, posts, menus, settings, users, apiKeys, categories, redirects, mediaTrash, contactSubmissions } from "@/db/schema";
 import type { Block } from "@/blocks/types";
-import type { MenuItem, ContactField } from "@/db/schema";
+import type { MenuItem, ContactField, ContactForm } from "@/db/schema";
+import { CONTACT_FORMS_KEY } from "@/lib/queries";
 import { validateBlocks } from "@/blocks/registry";
 import { requireUser, requireAdmin } from "@/lib/auth";
 import { listCloudinaryMedia, deleteCloudinaryMedia, setCloudinaryAlt } from "@/lib/cloudinary";
@@ -486,41 +487,55 @@ function cleanContactForm(input: ContactFormInput): ContactFormInput {
   };
 }
 
+// Forms are an array under the "contactForms" settings key. Read/write the
+// whole array (read fresh, not via the cached query, so concurrent edits aren't
+// clobbered by stale cache).
+async function readContactForms(): Promise<ContactForm[]> {
+  const rows = await db.select().from(settings).where(eq(settings.key, CONTACT_FORMS_KEY)).limit(1);
+  return (rows[0]?.value as ContactForm[] | undefined) ?? [];
+}
+async function writeContactForms(forms: ContactForm[]) {
+  await db
+    .insert(settings)
+    .values({ key: CONTACT_FORMS_KEY, value: forms })
+    .onConflictDoUpdate({ target: settings.key, set: { value: forms } });
+}
+
 export async function createContactForm(input: ContactFormInput) {
   await requireUser();
-  const data = cleanContactForm(input);
-  const [row] = await db.insert(contactForms).values(data).returning();
+  const form: ContactForm = { id: randomUUID(), ...cleanContactForm(input) };
+  await writeContactForms([...(await readContactForms()), form]);
   bumpContactForms();
-  return row;
+  return form;
 }
 
 export async function updateContactForm(id: string, input: ContactFormInput) {
   await requireUser();
   const data = cleanContactForm(input);
-  await db.update(contactForms).set({ ...data, updatedAt: new Date() }).where(eq(contactForms.id, id));
+  const forms = await readContactForms();
+  await writeContactForms(forms.map((f) => (f.id === id ? { id, ...data } : f)));
   bumpContactForms();
 }
 
 export async function deleteContactForm(id: string) {
   await requireUser();
-  await db.delete(contactForms).where(eq(contactForms.id, id));
+  const forms = await readContactForms();
+  await writeContactForms(forms.filter((f) => f.id !== id));
   bumpContactForms();
 }
 
 // Lightweight list for the block's form picker dropdown.
 export async function listContactFormsForPicker() {
   await requireUser();
-  return db
-    .select({ id: contactForms.id, name: contactForms.name })
-    .from(contactForms)
-    .orderBy(contactForms.name);
+  return (await readContactForms())
+    .map((f) => ({ id: f.id, name: f.name }))
+    .sort((a, b) => a.name.localeCompare(b.name));
 }
 
-// Full row for the editor-canvas preview (the canvas can't run getData).
+// Full form for the editor-canvas preview (the canvas can't run getData).
 export async function getContactFormForPreview(id: string) {
   await requireUser();
-  const rows = await db.select().from(contactForms).where(eq(contactForms.id, id)).limit(1);
-  return rows[0] ?? null;
+  return (await readContactForms()).find((f) => f.id === id) ?? null;
 }
 
 export async function deleteContactSubmission(id: string) {
