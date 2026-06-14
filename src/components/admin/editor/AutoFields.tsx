@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { FieldSpec } from "@/blocks/types";
-import { listPagesForPicker } from "@/app/admin/actions";
+import { listPagesForPicker, listContactFormsForPicker } from "@/app/admin/actions";
 import { MediaPicker } from "@/components/admin/MediaPicker";
 import { CloudinaryNotice } from "@/components/admin/CloudinaryNotice";
 import { RichTextField } from "@/components/admin/editor/RichTextField";
@@ -93,6 +93,8 @@ function Field({ field, value, onChange }: { field: FieldSpec; value: unknown; o
       return <ImageField label={field.label} value={(value as string) ?? ""} onChange={onChange} />;
     case "page":
       return <PageField label={field.label} placeholder={field.placeholder} value={(value as string) ?? ""} onChange={onChange} />;
+    case "contactForm":
+      return <ContactFormField label={field.label} placeholder={field.placeholder} value={(value as string) ?? ""} onChange={onChange} />;
     case "richtext":
       return (
         <div className="ad-field">
@@ -171,6 +173,48 @@ function PageField({
       </select>
       <p className="mt-1 text-[11px]" style={{ color: "var(--ad-muted)" }}>
         Pick a page you have created. Create the thank-you page first under Pages, then choose it here.
+      </p>
+    </div>
+  );
+}
+
+type ContactFormOption = { id: string; name: string };
+
+function ContactFormField({
+  label,
+  placeholder,
+  value,
+  onChange,
+}: {
+  label: string;
+  placeholder?: string;
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  const [forms, setForms] = useState<ContactFormOption[] | null>(null);
+
+  useEffect(() => {
+    listContactFormsForPicker()
+      .then(setForms)
+      .catch(() => setForms([]));
+  }, []);
+
+  const known = forms?.some((f) => f.id === value);
+
+  return (
+    <div className="ad-field">
+      <label className="ad-label">{label}</label>
+      <select className="ad-select" value={value} onChange={(e) => onChange(e.target.value)}>
+        <option value="">{placeholder ?? "Select a form..."}</option>
+        {forms?.map((f) => (
+          <option key={f.id} value={f.id}>
+            {f.name}
+          </option>
+        ))}
+        {value && !known && <option value={value}>{value}</option>}
+      </select>
+      <p className="mt-1 text-[11px]" style={{ color: "var(--ad-muted)" }}>
+        Build and manage forms under Contacts, then pick one here. Editing the form updates every page that uses it.
       </p>
     </div>
   );

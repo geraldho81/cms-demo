@@ -120,6 +120,34 @@ export const settings = pgTable("settings", {
   value: jsonb("value").notNull(),
 });
 
+// A single field in a reusable contact form. Same shape ContactForm.tsx renders.
+export type ContactField = {
+  name: string;
+  label: string;
+  type: "text" | "email" | "tel" | "textarea" | "select";
+  required: boolean;
+  options: string;
+  fullWidth: boolean;
+};
+
+// Reusable contact forms: build once under /admin/contacts, drop on any page by
+// picking from a dropdown. The form owns the fields, where submissions go, and
+// what happens after submit; the block owns the surrounding presentation copy.
+export const contactForms = pgTable("contact_forms", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  fields: jsonb("fields").$type<ContactField[]>().notNull().default([]),
+  submitLabel: text("submit_label").notNull().default("Send message"),
+  receiverEmail: text("receiver_email").notNull().default(""),
+  // Labels submissions in contact_submissions (matched by form_name).
+  formName: text("form_name").notNull().default("Contact"),
+  successMode: text("success_mode").$type<"inline" | "redirect">().notNull().default("inline"),
+  successMessage: text("success_message").notNull().default("Thanks. We'll be in touch shortly."),
+  successPath: text("success_path").notNull().default("/thank-you"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 export const contactSubmissions = pgTable("contact_submissions", {
   id: uuid("id").primaryKey().defaultRandom(),
   // Which contact-form block produced this (for grouping submissions per form).
@@ -164,3 +192,5 @@ export type Post = typeof posts.$inferSelect;
 export type Media = typeof media.$inferSelect;
 export type MediaTrash = typeof mediaTrash.$inferSelect;
 export type Menu = typeof menus.$inferSelect;
+export type ContactForm = typeof contactForms.$inferSelect;
+export type ContactSubmission = typeof contactSubmissions.$inferSelect;

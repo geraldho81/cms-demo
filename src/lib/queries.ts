@@ -1,7 +1,7 @@
 import { unstable_cache } from "next/cache";
 import { eq, desc, inArray, and, isNull } from "drizzle-orm";
 import { db } from "@/db";
-import { pages, posts, menus, settings, users, categories, redirects } from "@/db/schema";
+import { pages, posts, menus, settings, users, categories, redirects, contactForms } from "@/db/schema";
 import { isLive } from "@/lib/content";
 
 export const CACHE_TAGS = {
@@ -10,6 +10,7 @@ export const CACHE_TAGS = {
   menus: "cms-menus",
   settings: "cms-settings",
   redirects: "cms-redirects",
+  contactForms: "cms-contact-forms",
 } as const;
 
 export const getPageBySlug = (slug: string) =>
@@ -123,6 +124,16 @@ export const getMenu = (name: string) =>
     },
     ["menu", name],
     { tags: [CACHE_TAGS.menus], revalidate: 60 }
+  )();
+
+export const getContactFormById = (id: string) =>
+  unstable_cache(
+    async () => {
+      const rows = await db.select().from(contactForms).where(eq(contactForms.id, id)).limit(1);
+      return rows[0] ?? null;
+    },
+    ["contact-form", id],
+    { tags: [CACHE_TAGS.contactForms], revalidate: 60 }
   )();
 
 export type SiteSettings = {

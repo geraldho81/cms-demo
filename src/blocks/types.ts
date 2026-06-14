@@ -22,6 +22,7 @@ export type FieldSpec =
   | { kind: "select"; name: string; label: string; options: { value: string; label: string }[] }
   | { kind: "image"; name: string; label: string }
   | { kind: "page"; name: string; label: string; placeholder?: string }
+  | { kind: "contactForm"; name: string; label: string; placeholder?: string }
   | { kind: "richtext"; name: string; label: string }
   | { kind: "list"; name: string; label: string; itemLabel: string; fields: FieldSpec[] };
 

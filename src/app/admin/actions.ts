@@ -6,9 +6,9 @@ import { eq, desc, and, ne, sql, inArray, isNull } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { createHash, randomBytes } from "crypto";
 import { db } from "@/db";
-import { pages, pageRevisions, posts, menus, settings, users, apiKeys, categories, redirects, mediaTrash } from "@/db/schema";
+import { pages, pageRevisions, posts, menus, settings, users, apiKeys, categories, redirects, mediaTrash, contactForms, contactSubmissions } from "@/db/schema";
 import type { Block } from "@/blocks/types";
-import type { MenuItem } from "@/db/schema";
+import type { MenuItem, ContactField } from "@/db/schema";
 import { validateBlocks } from "@/blocks/registry";
 import { requireUser, requireAdmin } from "@/lib/auth";
 import { listCloudinaryMedia, deleteCloudinaryMedia, setCloudinaryAlt } from "@/lib/cloudinary";
@@ -24,6 +24,13 @@ function bumpPages() {
 function bumpPosts() {
   revalidateTag(CACHE_TAGS.posts, "max");
   revalidatePath("/blog", "layout");
+}
+// Forms are referenced from arbitrary cached pages, so a form edit must also
+// refresh those pages (they pull the form server-side via getData).
+function bumpContactForms() {
+  revalidateTag(CACHE_TAGS.contactForms, "max");
+  revalidatePath("/admin/contacts");
+  bumpPages();
 }
 
 /* ============================== Pages ============================== */
@@ -429,6 +436,97 @@ export async function deleteRedirect(id: string) {
   await db.delete(redirects).where(eq(redirects.id, id));
   revalidateTag(CACHE_TAGS.redirects, "max");
   revalidatePath("/admin/redirects");
+}
+
+/* ========================== Contact forms ========================== */
+/* Reusable forms built under /admin/contacts and dropped onto pages via the
+   contact-form block's form picker. */
+
+export type ContactFormInput = {
+  name: string;
+  fields: ContactField[];
+  submitLabel: string;
+  receiverEmail: string;
+  formName: string;
+  successMode: "inline" | "redirect";
+  successMessage: string;
+  successPath: string;
+};
+
+// Trim and sanitise the builder payload. Field keys are forced to a safe slug
+// (lowercase, no spaces) so they map cleanly onto submission data.
+function cleanContactForm(input: ContactFormInput): ContactFormInput {
+  const name = input.name.trim();
+  if (!name) throw new Error("Give the form a name.");
+  const fields = (input.fields ?? [])
+    .map((f) => ({
+      label: f.label.trim(),
+      name: (f.name || f.label).trim().toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, ""),
+      type: f.type,
+      required: !!f.required,
+      options: f.options ?? "",
+      fullWidth: !!f.fullWidth,
+    }))
+    .filter((f) => f.label && f.name);
+  if (fields.length === 0) throw new Error("Add at least one field.");
+  const seen = new Set<string>();
+  for (const f of fields) {
+    if (seen.has(f.name)) throw new Error(`Two fields share the key "${f.name}". Field keys must be unique.`);
+    seen.add(f.name);
+  }
+  return {
+    name,
+    fields,
+    submitLabel: input.submitLabel.trim() || "Send message",
+    receiverEmail: input.receiverEmail.trim(),
+    formName: input.formName.trim() || name,
+    successMode: input.successMode === "redirect" ? "redirect" : "inline",
+    successMessage: input.successMessage.trim() || "Thanks. We'll be in touch shortly.",
+    successPath: input.successPath.trim() || "/thank-you",
+  };
+}
+
+export async function createContactForm(input: ContactFormInput) {
+  await requireUser();
+  const data = cleanContactForm(input);
+  const [row] = await db.insert(contactForms).values(data).returning();
+  bumpContactForms();
+  return row;
+}
+
+export async function updateContactForm(id: string, input: ContactFormInput) {
+  await requireUser();
+  const data = cleanContactForm(input);
+  await db.update(contactForms).set({ ...data, updatedAt: new Date() }).where(eq(contactForms.id, id));
+  bumpContactForms();
+}
+
+export async function deleteContactForm(id: string) {
+  await requireUser();
+  await db.delete(contactForms).where(eq(contactForms.id, id));
+  bumpContactForms();
+}
+
+// Lightweight list for the block's form picker dropdown.
+export async function listContactFormsForPicker() {
+  await requireUser();
+  return db
+    .select({ id: contactForms.id, name: contactForms.name })
+    .from(contactForms)
+    .orderBy(contactForms.name);
+}
+
+// Full row for the editor-canvas preview (the canvas can't run getData).
+export async function getContactFormForPreview(id: string) {
+  await requireUser();
+  const rows = await db.select().from(contactForms).where(eq(contactForms.id, id)).limit(1);
+  return rows[0] ?? null;
+}
+
+export async function deleteContactSubmission(id: string) {
+  await requireUser();
+  await db.delete(contactSubmissions).where(eq(contactSubmissions.id, id));
+  revalidatePath("/admin/contacts/submissions");
 }
 
 /* ============================== Media ============================== */
