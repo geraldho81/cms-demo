@@ -460,7 +460,8 @@ function PageInspector({
           </label>
           <div className="ad-field">
             <label className="ad-label">Custom schema markup (JSON-LD)</label>
-            <textarea className="ad-textarea" rows={6} value={page.customSchema ?? ""} onChange={(e) => update({ customSchema: e.target.value || null })} placeholder={'{\n  "@type": "Product",\n  "name": "..."\n}'} style={{ fontFamily: "monospace", fontSize: "12px" }} />
+            <textarea className="ad-textarea" rows={6} value={page.customSchema ?? ""} onChange={(e) => update({ customSchema: e.target.value || null })} placeholder={'{\n  "@type": "Product",\n  "name": "..."\n}'} style={{ fontFamily: "monospace", fontSize: "13px" }} />
+            <p style={{ fontSize: "12px", color: "var(--ad-muted)", marginTop: "0.4rem" }}>Generate your schema at <a href="https://technicalseo.com/tools/schema-markup-generator/" target="_blank" rel="noopener noreferrer">TechnicalSEO.com</a> and validate with <a href="https://search.google.com/test/rich-results" target="_blank" rel="noopener noreferrer">Google Rich Results Test</a>.</p>
           </div>
         </>
       )}
