@@ -568,10 +568,16 @@ figure figcaption {
   left: 0;
   right: 0;
   z-index: 80;
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.85);
+  -webkit-backdrop-filter: blur(14px);
   backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--line);
   transition: transform 0.35s ease;
+}
+/* Browsers without backdrop-filter (or with it disabled) get a near-opaque
+   header so page content never bleeds through behind it while scrolling. */
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .site-header { background: rgba(255, 255, 255, 0.97); }
 }
 .site-header-inner {
   position: relative;
