@@ -101,6 +101,9 @@ export function PageEditor({ initial }: { initial: PageData }) {
   const scheduleSave = useCallback(() => {
     setSaveState("dirty");
     if (timerRef.current) clearTimeout(timerRef.current);
+    // Live (published) pages never autosave: edits only reach the public site
+    // on an explicit Save click. Drafts keep autosaving so work is not lost.
+    if (pageRef.current.status === "published") return;
     timerRef.current = setTimeout(() => doSave(), 800);
   }, [doSave]);
 
