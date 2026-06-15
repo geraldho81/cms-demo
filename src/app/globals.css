@@ -261,7 +261,7 @@ p { margin: 0 0 1em; }
    Hero (default cms block, kept for compatibility)
    ============================================================ */
 .cms-hero {
-  padding: 7rem 0 4.5rem;
+  padding: 2.5rem 0 4.5rem;
   text-align: center;
 }
 .cms-hero-left { text-align: left; }
@@ -620,6 +620,9 @@ figure figcaption {
 }
 
 main { min-height: 60vh; }
+/* Reserve the fixed header's height so the first block on every page clears it,
+   not just pages that happen to open with a tall hero. */
+.site-main { padding-top: var(--site-header-height); }
 
 .site-footer {
   margin-top: 4rem;
@@ -792,7 +795,7 @@ main { min-height: 60vh; }
   .site-header { --site-header-height: 60px; }
   .site-header-inner { gap: 0.75rem; }
   .site-logo img { height: 20px; }
-  .cms-hero { padding: 3.5rem 0 3rem; }
+  .cms-hero { padding: 1.5rem 0 3rem; }
 }
 
 /* ============================================================

@@ -21,7 +21,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       <GoogleTagManager gtmId={settings.gtmId} />
       <SiteFX />
       <SiteHeader siteName={settings.siteName} logoUrl={settings.logoUrl} items={header} />
-      <main>{children}</main>
+      <main className="site-main">{children}</main>
       <footer className="site-footer">
         <div className="cms-container site-footer-inner">
           <div>
