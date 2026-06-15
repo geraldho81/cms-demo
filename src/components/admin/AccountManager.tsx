@@ -23,6 +23,7 @@ export function AccountManager({
   const [current, setCurrent] = useState("");
   const [next, setNext] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [show, setShow] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -107,28 +108,67 @@ export function AccountManager({
       {pickerOpen && <MediaPicker onSelect={(u) => saveImage(u)} onClose={() => setPickerOpen(false)} />}
 
       <section className="rounded-xl bg-white p-5">
-        <h2 className="mb-3 text-sm font-bold tracking-tight">Change password</h2>
-        <div className="ad-field">
-          <label className="ad-label">Current password</label>
-          <input className="ad-input" type="password" autoComplete="current-password" value={current} onChange={(e) => setCurrent(e.target.value)} />
+        <h2 className="text-sm font-bold tracking-tight">Change password</h2>
+        <p className="mt-1 mb-4 text-xs" style={{ color: "var(--ad-muted)" }}>
+          Use at least 8 characters. You stay signed in after updating.
+        </p>
+
+        <div className="flex max-w-sm flex-col gap-4">
+          <div>
+            <label htmlFor="current-password" className="ad-label">Current password</label>
+            <input
+              id="current-password"
+              className="ad-input"
+              type={show ? "text" : "password"}
+              autoComplete="current-password"
+              placeholder="Enter your current password"
+              value={current}
+              onChange={(e) => setCurrent(e.target.value)}
+            />
+          </div>
+          <div>
+            <label htmlFor="new-password" className="ad-label">New password</label>
+            <input
+              id="new-password"
+              className="ad-input"
+              type={show ? "text" : "password"}
+              autoComplete="new-password"
+              placeholder="At least 8 characters"
+              value={next}
+              onChange={(e) => setNext(e.target.value)}
+            />
+          </div>
+          <div>
+            <label htmlFor="confirm-password" className="ad-label">Confirm new password</label>
+            <input
+              id="confirm-password"
+              className="ad-input"
+              type={show ? "text" : "password"}
+              autoComplete="new-password"
+              placeholder="Re-enter your new password"
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+            />
+          </div>
+
+          <label className="flex items-center gap-2 text-xs" style={{ color: "var(--ad-muted)" }}>
+            <input type="checkbox" checked={show} onChange={(e) => setShow(e.target.checked)} />
+            Show passwords
+          </label>
+
+          {error && <p className="text-sm" style={{ color: "var(--ad-danger)" }}>{error}</p>}
+          {done && <p className="text-sm" style={{ color: "var(--ad-accent)" }}>Password updated.</p>}
+
+          <div>
+            <button
+              className="ad-btn ad-btn-primary"
+              disabled={busy || !current || next.length < 8 || !confirm}
+              onClick={submit}
+            >
+              {busy ? "Saving..." : "Update password"}
+            </button>
+          </div>
         </div>
-        <div className="ad-field">
-          <label className="ad-label">New password</label>
-          <input className="ad-input" type="password" autoComplete="new-password" value={next} onChange={(e) => setNext(e.target.value)} />
-        </div>
-        <div className="ad-field">
-          <label className="ad-label">Confirm new password</label>
-          <input className="ad-input" type="password" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
-        </div>
-        {error && <p className="mb-2 text-sm" style={{ color: "var(--ad-danger)" }}>{error}</p>}
-        {done && <p className="mb-2 text-sm" style={{ color: "var(--ad-accent)" }}>Password updated.</p>}
-        <button
-          className="ad-btn ad-btn-primary"
-          disabled={busy || !current || next.length < 8 || !confirm}
-          onClick={submit}
-        >
-          {busy ? "Saving..." : "Update password"}
-        </button>
       </section>
     </div>
   );
