@@ -123,6 +123,7 @@ export const media = pgTable("media", {
 export type MenuItem = {
   label: string;
   href: string;
+  newTab?: boolean;
   children?: MenuItem[];
 };
 

@@ -1,6 +1,6 @@
 {
   "name": "slim-minima",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "private": true,
   "description": "A minimal, self-hosted, block-based CMS for marketers. Next.js + Drizzle + Neon Postgres, SEO and GEO ready, with an AI/MCP connector and REST API for Claude, ChatGPT, and coding agents.",
   "author": "Gerald Ho",
@@ -46,6 +46,7 @@
     "@tiptap/extension-image": "^3.26.1",
     "@tiptap/extension-link": "^3.26.1",
     "@tiptap/extension-placeholder": "^3.26.1",
+    "@tiptap/extension-underline": "^3.26.1",
     "@tiptap/react": "^3.26.1",
     "@tiptap/starter-kit": "^3.26.1",
     "bcryptjs": "^3.0.3",

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { defineBlock } from "@/blocks/types";
+import { safeHref, linkAttrs } from "@/lib/content";
 
 const schema = z.object({
   heading: z.string(),
@@ -7,6 +8,8 @@ const schema = z.object({
     z.object({
       url: z.string(),
       alt: z.string(),
+      href: z.string().default(""),
+      newTab: z.boolean().default(false),
     })
   ),
 });
@@ -30,6 +33,8 @@ export default defineBlock<Props>({
       fields: [
         { kind: "image", name: "url", label: "Logo image" },
         { kind: "text", name: "alt", label: "Company name" },
+        { kind: "text", name: "href", label: "Link (optional)" },
+        { kind: "toggle", name: "newTab", label: "Open in new tab" },
       ],
     },
   ],
@@ -40,10 +45,17 @@ export default defineBlock<Props>({
         <div className="cms-image-placeholder">Add logos in the settings panel</div>
       ) : (
         <div className="cms-logos">
-          {p.logos.map((logo, i) => (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img key={i} src={logo.url} alt={logo.alt} />
-          ))}
+          {p.logos.map((logo, i) =>
+            logo.href ? (
+              <a key={i} href={safeHref(logo.href)} {...linkAttrs({ newTab: logo.newTab })}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={logo.url} alt={logo.alt} />
+              </a>
+            ) : (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img key={i} src={logo.url} alt={logo.alt} />
+            )
+          )}
         </div>
       )}
     </div>

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { defineBlock } from "@/blocks/types";
-import { safeHref } from "@/lib/content";
+import { safeHref, linkAttrs } from "@/lib/content";
 
 const schema = z.object({
   heading: z.string(),
@@ -13,6 +13,7 @@ const schema = z.object({
       features: z.string(),
       buttonLabel: z.string(),
       buttonHref: z.string(),
+      buttonNewTab: z.boolean().default(false),
       highlighted: z.boolean(),
     })
   ),
@@ -37,6 +38,7 @@ export default defineBlock<Props>({
         features: "1 project\nCommunity support",
         buttonLabel: "Start free",
         buttonHref: "#",
+        buttonNewTab: false,
         highlighted: false,
       },
       {
@@ -47,6 +49,7 @@ export default defineBlock<Props>({
         features: "Unlimited projects\nPriority support\nAdvanced features",
         buttonLabel: "Go Pro",
         buttonHref: "#",
+        buttonNewTab: false,
         highlighted: true,
       },
     ],
@@ -66,6 +69,7 @@ export default defineBlock<Props>({
         { kind: "textarea", name: "features", label: "Features (one per line)", rows: 4 },
         { kind: "text", name: "buttonLabel", label: "Button label" },
         { kind: "text", name: "buttonHref", label: "Button link" },
+        { kind: "toggle", name: "buttonNewTab", label: "Open in new tab" },
         { kind: "toggle", name: "highlighted", label: "Highlight this tier" },
       ],
     },
@@ -95,7 +99,7 @@ export default defineBlock<Props>({
                 ))}
             </ul>
             {tier.buttonLabel && (
-              <a className={`cms-btn ${tier.highlighted ? "cms-btn-primary" : "cms-btn-ghost"}`} href={safeHref(tier.buttonHref)}>
+              <a className={`cms-btn ${tier.highlighted ? "cms-btn-primary" : "cms-btn-ghost"}`} href={safeHref(tier.buttonHref)} {...linkAttrs({ newTab: tier.buttonNewTab })}>
                 {tier.buttonLabel}
               </a>
             )}
