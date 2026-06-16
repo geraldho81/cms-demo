@@ -42,7 +42,7 @@ function ConnectedActions({
     const res = await startSecurityUpdate(version);
     if (res.ok) {
       setState("done");
-      setMessage(`Updating to v${version}. Your site redeploys with the fix in a few minutes - this notice clears itself once it is live.`);
+      setMessage(`Update to v${version} started. Your site is redeploying with the fix - this takes a few minutes. Reload this page once it is live and the update notice will be gone.`);
     } else {
       setState("error");
       setMessage(res.error ?? "Could not start the update.");
