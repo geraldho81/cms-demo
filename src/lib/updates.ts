@@ -73,7 +73,7 @@ export async function getUpdateStatus(): Promise<UpdateStatus> {
   try {
     const res = await fetch(`https://api.github.com/repos/${repo}/releases?per_page=30`, {
       headers: { Accept: "application/vnd.github+json" },
-      next: { revalidate: 3600 },
+      next: { revalidate: 300 },
     });
     if (!res.ok) return { installed, latest: null, pending: [], checked: false };
 
