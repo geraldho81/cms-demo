@@ -38,6 +38,23 @@ export function safeHref(href: string | null | undefined): string {
   return h; // relative path, anchor, or query string
 }
 
+/**
+ * Anchor target/rel for a link's open-in-new-tab and nofollow options.
+ * new-tab links always get rel="noopener noreferrer" for security.
+ */
+export function linkAttrs(opts?: { newTab?: boolean; nofollow?: boolean }): {
+  target?: string;
+  rel?: string;
+} {
+  const rel: string[] = [];
+  if (opts?.newTab) rel.push("noopener", "noreferrer");
+  if (opts?.nofollow) rel.push("nofollow");
+  return {
+    target: opts?.newTab ? "_blank" : undefined,
+    rel: rel.length ? rel.join(" ") : undefined,
+  };
+}
+
 export function formatDate(date: Date | string | null): string {
   if (!date) return "";
   return new Date(date).toLocaleDateString("en-US", {

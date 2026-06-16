@@ -22,13 +22,15 @@ export function RichTextField({
   const [pickerOpen, setPickerOpen] = useState(false);
   const [linkOpen, setLinkOpen] = useState(false);
   const [linkUrl, setLinkUrl] = useState("");
+  const [linkNewTab, setLinkNewTab] = useState(false);
   const loadedFor = useRef<string | null>(null);
 
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
       StarterKit.configure({ link: false }),
-      Link.configure({ openOnClick: false }),
+      // No global target/rel: each link controls its own "open in new tab".
+      Link.configure({ openOnClick: false, HTMLAttributes: { target: null, rel: null } }),
       Image,
       Placeholder.configure({ placeholder }),
     ],
@@ -52,6 +54,20 @@ export function RichTextField({
 
   if (!editor) return <div className="ad-richtext" />;
 
+  function applyLink() {
+    if (!editor) return;
+    if (linkUrl) {
+      editor
+        .chain()
+        .focus()
+        .setLink({ href: linkUrl, target: linkNewTab ? "_blank" : null, rel: linkNewTab ? "noopener noreferrer" : null })
+        .run();
+    } else {
+      editor.chain().focus().unsetLink().run();
+    }
+    setLinkOpen(false);
+  }
+
   const btn = (active: boolean) =>
     `rounded px-1.5 py-0.5 text-xs font-semibold ${active ? "bg-[var(--ad-accent-soft)] text-[var(--ad-accent)]" : "text-[var(--ad-muted)] hover:bg-[var(--ad-bg)]"}`;
 
@@ -73,6 +89,7 @@ export function RichTextField({
           className={btn(editor.isActive("link") || linkOpen)}
           onClick={() => {
             setLinkUrl((editor.getAttributes("link").href as string) ?? "");
+            setLinkNewTab(editor.getAttributes("link").target === "_blank");
             setLinkOpen((v) => !v);
           }}
         >
@@ -81,36 +98,47 @@ export function RichTextField({
         <button type="button" className={btn(false)} onClick={() => setPickerOpen(true)}>Img</button>
       </div>
       {linkOpen && (
-        <div className="mb-1.5 flex items-center gap-1.5">
+        <div className="mb-1.5 flex flex-wrap items-center gap-1.5">
           <input
             className="ad-input"
-            style={{ padding: "0.3rem 0.6rem", fontSize: "0.8rem" }}
-            placeholder="https://..."
+            style={{ padding: "0.3rem 0.6rem", fontSize: "0.8rem", minWidth: "12rem", flex: 1 }}
+            placeholder="https://... or /about"
             value={linkUrl}
             autoFocus
             onChange={(e) => setLinkUrl(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 e.preventDefault();
-                if (linkUrl) editor.chain().focus().setLink({ href: linkUrl }).run();
-                else editor.chain().focus().unsetLink().run();
-                setLinkOpen(false);
+                applyLink();
               }
               if (e.key === "Escape") setLinkOpen(false);
             }}
           />
+          <label className="flex shrink-0 items-center gap-1 text-xs" style={{ color: "var(--ad-muted)" }} title="Open this link in a new tab">
+            <input type="checkbox" checked={linkNewTab} onChange={(e) => setLinkNewTab(e.target.checked)} />
+            New tab
+          </label>
           <button
             type="button"
             className="ad-btn ad-btn-soft"
             style={{ padding: "0.3rem 0.6rem", fontSize: "0.75rem" }}
-            onClick={() => {
-              if (linkUrl) editor.chain().focus().setLink({ href: linkUrl }).run();
-              else editor.chain().focus().unsetLink().run();
-              setLinkOpen(false);
-            }}
+            onClick={applyLink}
           >
             Set
           </button>
+          {editor.isActive("link") && (
+            <button
+              type="button"
+              className="ad-btn ad-btn-soft"
+              style={{ padding: "0.3rem 0.6rem", fontSize: "0.75rem", color: "var(--ad-danger)" }}
+              onClick={() => {
+                editor.chain().focus().unsetLink().run();
+                setLinkOpen(false);
+              }}
+            >
+              Remove
+            </button>
+          )}
         </div>
       )}
       <EditorContent editor={editor} />

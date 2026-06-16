@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { defineBlock } from "@/blocks/types";
-import { safeHref } from "@/lib/content";
+import { safeHref, linkAttrs } from "@/lib/content";
 
 const schema = z.object({
   eyebrow: z.string(),
@@ -8,8 +8,10 @@ const schema = z.object({
   subheading: z.string(),
   primaryLabel: z.string(),
   primaryHref: z.string(),
+  primaryNewTab: z.boolean().default(false),
   secondaryLabel: z.string(),
   secondaryHref: z.string(),
+  secondaryNewTab: z.boolean().default(false),
   imageUrl: z.string(),
   imageAlt: z.string(),
   align: z.enum(["center", "left"]),
@@ -29,8 +31,10 @@ export default defineBlock<Props>({
     subheading: "One or two sentences that explain what this site offers and why it matters.",
     primaryLabel: "Get started",
     primaryHref: "/contact",
+    primaryNewTab: false,
     secondaryLabel: "",
     secondaryHref: "",
+    secondaryNewTab: false,
     imageUrl: "",
     imageAlt: "",
     align: "center",
@@ -41,8 +45,10 @@ export default defineBlock<Props>({
     { kind: "textarea", name: "subheading", label: "Subheading", rows: 3 },
     { kind: "text", name: "primaryLabel", label: "Primary button label" },
     { kind: "text", name: "primaryHref", label: "Primary button link" },
+    { kind: "toggle", name: "primaryNewTab", label: "Open primary in new tab" },
     { kind: "text", name: "secondaryLabel", label: "Secondary button label" },
     { kind: "text", name: "secondaryHref", label: "Secondary button link" },
+    { kind: "toggle", name: "secondaryNewTab", label: "Open secondary in new tab" },
     { kind: "image", name: "imageUrl", label: "Image" },
     { kind: "text", name: "imageAlt", label: "Image alt text" },
     {
@@ -66,12 +72,12 @@ export default defineBlock<Props>({
             {(p.primaryLabel || p.secondaryLabel) && (
               <div className="cms-hero-actions">
                 {p.primaryLabel && (
-                  <a className="cms-btn cms-btn-primary" href={safeHref(p.primaryHref)}>
+                  <a className="cms-btn cms-btn-primary" href={safeHref(p.primaryHref)} {...linkAttrs({ newTab: p.primaryNewTab })}>
                     {p.primaryLabel}
                   </a>
                 )}
                 {p.secondaryLabel && (
-                  <a className="cms-btn cms-btn-ghost" href={safeHref(p.secondaryHref)}>
+                  <a className="cms-btn cms-btn-ghost" href={safeHref(p.secondaryHref)} {...linkAttrs({ newTab: p.secondaryNewTab })}>
                     {p.secondaryLabel}
                   </a>
                 )}

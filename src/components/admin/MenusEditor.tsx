@@ -55,6 +55,14 @@ function SingleMenu({ name, label, initial, pageOptions }: { name: string; label
               list={`pages-${name}`}
               onChange={(e) => persist(items.map((it, j) => (j === i ? { ...it, href: e.target.value } : it)))}
             />
+            <label className="flex shrink-0 items-center gap-1 text-xs" style={{ color: "var(--ad-muted)" }} title="Open this link in a new tab">
+              <input
+                type="checkbox"
+                checked={!!item.newTab}
+                onChange={(e) => persist(items.map((it, j) => (j === i ? { ...it, newTab: e.target.checked } : it)))}
+              />
+              New tab
+            </label>
             <button
               className="px-1 text-xs"
               style={{ color: "var(--ad-muted)" }}

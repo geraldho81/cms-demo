@@ -1,12 +1,13 @@
 import { z } from "zod";
 import { defineBlock } from "@/blocks/types";
-import { safeHref } from "@/lib/content";
+import { safeHref, linkAttrs } from "@/lib/content";
 
 const schema = z.object({
   heading: z.string(),
   body: z.string(),
   buttonLabel: z.string(),
   buttonHref: z.string(),
+  buttonNewTab: z.boolean().default(false),
   tone: z.enum(["accent", "soft"]),
 });
 
@@ -23,6 +24,7 @@ export default defineBlock<Props>({
     body: "Join today, it only takes a minute.",
     buttonLabel: "Get started",
     buttonHref: "/contact",
+    buttonNewTab: false,
     tone: "accent",
   },
   fields: [
@@ -30,6 +32,7 @@ export default defineBlock<Props>({
     { kind: "textarea", name: "body", label: "Body", rows: 2 },
     { kind: "text", name: "buttonLabel", label: "Button label" },
     { kind: "text", name: "buttonHref", label: "Button link" },
+    { kind: "toggle", name: "buttonNewTab", label: "Open in new tab" },
     {
       kind: "select",
       name: "tone",
@@ -48,7 +51,7 @@ export default defineBlock<Props>({
           {p.body && <p>{p.body}</p>}
         </div>
         {p.buttonLabel && (
-          <a className={`cms-btn ${p.tone === "accent" ? "cms-btn-inverse" : "cms-btn-primary"}`} href={safeHref(p.buttonHref)}>
+          <a className={`cms-btn ${p.tone === "accent" ? "cms-btn-inverse" : "cms-btn-primary"}`} href={safeHref(p.buttonHref)} {...linkAttrs({ newTab: p.buttonNewTab })}>
             {p.buttonLabel}
           </a>
         )}

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
 import type { MenuItem } from "@/db/schema";
-import { safeHref } from "@/lib/content";
+import { safeHref, linkAttrs } from "@/lib/content";
 
 export function SiteHeader({
   siteName,
@@ -71,7 +71,7 @@ export function SiteHeader({
 
         <nav className="site-nav site-nav-desktop" aria-label="Primary navigation">
           {items.map((item) => (
-            <Link key={item.href} href={safeHref(item.href)}>
+            <Link key={item.href} href={safeHref(item.href)} {...linkAttrs({ newTab: item.newTab })}>
               {item.label}
             </Link>
           ))}
@@ -102,7 +102,7 @@ export function SiteHeader({
         />
         <nav id={menuId} className="site-mobile-nav" aria-label="Mobile navigation">
           {items.map((item, index) => (
-            <Link key={item.href} href={safeHref(item.href)} tabIndex={open ? 0 : -1} onClick={close}>
+            <Link key={item.href} href={safeHref(item.href)} {...linkAttrs({ newTab: item.newTab })} tabIndex={open ? 0 : -1} onClick={close}>
               <span className="site-mobile-nav-index">{String(index + 1).padStart(2, "0")}</span>
               <span>{item.label}</span>
               <span aria-hidden="true">↗</span>
