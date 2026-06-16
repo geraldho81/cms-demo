@@ -328,6 +328,15 @@ figure figcaption {
   object-fit: cover;
   border-radius: var(--radius);
 }
+.cms-gallery-figure {
+  margin: 0;
+}
+.cms-gallery-caption {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--muted, #6b6b66);
+  text-align: center;
+}
 .cms-video {
   position: relative;
   aspect-ratio: 16 / 9;

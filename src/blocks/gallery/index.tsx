@@ -7,6 +7,7 @@ const schema = z.object({
     z.object({
       url: z.string(),
       alt: z.string(),
+      caption: z.string().default(""),
     })
   ),
 });
@@ -39,6 +40,7 @@ export default defineBlock<Props>({
       fields: [
         { kind: "image", name: "url", label: "Image" },
         { kind: "text", name: "alt", label: "Alt text" },
+        { kind: "text", name: "caption", label: "Caption (optional)" },
       ],
     },
   ],
@@ -48,10 +50,18 @@ export default defineBlock<Props>({
         <div className="cms-image-placeholder">Add images in the settings panel</div>
       ) : (
         <div className="cms-grid" style={{ gridTemplateColumns: `repeat(${p.columns}, 1fr)` }}>
-          {p.images.map((img, i) => (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img className="cms-gallery-img" key={i} src={img.url} alt={img.alt} />
-          ))}
+          {p.images.map((img, i) =>
+            img.caption ? (
+              <figure className="cms-gallery-figure" key={i}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img className="cms-gallery-img" src={img.url} alt={img.alt} />
+                <figcaption className="cms-gallery-caption">{img.caption}</figcaption>
+              </figure>
+            ) : (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img className="cms-gallery-img" key={i} src={img.url} alt={img.alt} />
+            )
+          )}
         </div>
       )}
     </div>
